@@ -26,8 +26,8 @@
   const MIX_HARD_AMBIENCE_MUL = 0.78;
   /** Checkmate-loss WAV (and resign lead-in) in Hard — extra duck below other Hard SFX. */
   const MIX_HARD_MATE_LOSS_EXTRA_MUL = 0.66;
-  /** Bump when replacing files under ``Sounds/`` — browsers cache ``/sounds/*.wav`` aggressively without this. */
-  const PACK_SOUNDS_CACHE_VER = '109a1f9';
+  /** Bump when replacing files under ``Sounds/`` — browsers cache pack WAV URLs aggressively without this. */
+  const PACK_SOUNDS_CACHE_VER = '109a1f9b';
   const MIX_SFX_MOVE = 0.32;
   /** Move-sting tweaks vs MIX_SFX_MOVE. */
   const MIX_SFX_EXCELLENT = 0.66;
@@ -108,7 +108,7 @@
     mistake: 'mistake.wav',
   };
 
-  /** When difficulty is ``hard``, these classifications load from ``sounds/Hard/``. */
+  /** When difficulty is ``hard``, these classifications load from ``Sounds/Hard/``. */
   const HARD_PACK_CLASSIFICATIONS = {
     best: true,
     blunder: true,
@@ -135,7 +135,7 @@
 
   /** Append cache-buster so updated pack WAVs are fetched (see ``PACK_SOUNDS_CACHE_VER``). */
   function packSoundUrl(path) {
-    if (!path || path.indexOf('/sounds/') !== 0) return path;
+    if (!path || path.indexOf('/Sounds/') !== 0) return path;
     var sep = path.indexOf('?') >= 0 ? '&' : '?';
     return path + sep + 'v=' + PACK_SOUNDS_CACHE_VER;
   }
@@ -179,7 +179,7 @@
     if (packFolder === 'Hard' && !HARD_PACK_CLASSIFICATIONS[classification]) {
       return null;
     }
-    return packSoundUrl('/sounds/' + packFolder + '/' + fname);
+    return packSoundUrl('/Sounds/' + packFolder + '/' + fname);
   }
 
   function moveSoundUrl(classification) {
@@ -188,14 +188,14 @@
   }
 
   function ambienceUrl() {
-    return packSoundUrl('/sounds/' + soundsPackFolder() + '/ambience.wav');
+    return packSoundUrl('/Sounds/' + soundsPackFolder() + '/ambience.wav');
   }
 
   function mateLossUrlForPack(packFolder) {
     if (packFolder === 'Hard') {
-      return packSoundUrl('/sounds/Hard/checkmate_loss.wav');
+      return packSoundUrl('/Sounds/Hard/checkmate_loss.wav');
     }
-    return packSoundUrl('/sounds/' + packFolder + '/checkmateLoss.wav');
+    return packSoundUrl('/Sounds/' + packFolder + '/checkmateLoss.wav');
   }
 
   /** Medium: ``checkmateLoss.wav``. Hard: ``checkmate_loss.wav``. */
@@ -386,7 +386,7 @@
       if (!kind) return;
       withRunningAudio(function () {});
       if (kind === 'ambience-start') {
-        startTestAmbienceFromUrl(packSoundUrl('/sounds/Hard/ambience.wav'));
+        startTestAmbienceFromUrl(packSoundUrl('/Sounds/Hard/ambience.wav'));
         return;
       }
       if (kind === 'ambience-stop') {

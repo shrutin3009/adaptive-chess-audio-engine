@@ -35,12 +35,14 @@ app = Flask(__name__, static_folder="static", static_url_path="/static")
 CORS(app)
 
 _ROOT = os.path.dirname(os.path.abspath(__file__))
-_SOUNDS_ROOT = os.path.join(_ROOT, "sounds")
+# Folder name in git is ``Sounds/`` (capital S); match it so Linux clones resolve correctly.
+_SOUNDS_ROOT = os.path.join(_ROOT, "Sounds")
 
 
+@app.route("/Sounds/<path:filename>")
 @app.route("/sounds/<path:filename>")
 def serve_project_sounds(filename: str):
-    """Serve files from repo-root ``sounds/`` (e.g. ``sounds/medium/ambience.wav``)."""
+    """Serve files from repo-root ``Sounds/`` (e.g. ``Sounds/Medium/ambience.wav``). Both ``/Sounds/`` and legacy ``/sounds/`` URLs work."""
     if not os.path.isdir(_SOUNDS_ROOT):
         abort(404)
     return send_from_directory(_SOUNDS_ROOT, filename)

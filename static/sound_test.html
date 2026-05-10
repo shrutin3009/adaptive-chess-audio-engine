@@ -76,7 +76,7 @@
     Start the Flask app, then open this page from the dev server (paths are root-relative).
     Example: <code>http://127.0.0.1:5001/static/sound_test.html</code>
     — change port if you use <code>PORT=…</code>.
-    Pack WAVs live in the repo under <code>Sounds/</code> (capital S); the URLs below use <code>/sounds/…</code> like the game.
+    Pack WAVs use <code>/Sounds/…</code> URLs (capital <strong>S</strong>), same as the game and Flask.
   </p>
 
   <h2>Easy</h2>
@@ -87,8 +87,8 @@
       <tr>
         <th>Ambience</th>
         <td>
-          <audio controls preload="none" src="/sounds/Easy/ambience.wav"></audio>
-          <div class="path">/sounds/Easy/ambience.wav</div>
+          <audio controls preload="none" src="/Sounds/Easy/ambience.wav"></audio>
+          <div class="path">/Sounds/Easy/ambience.wav</div>
         </td>
       </tr>
     </tbody>
@@ -98,17 +98,17 @@
   <table>
     <thead><tr><th>Role</th><th>Play</th></tr></thead>
     <tbody>
-      <tr><th>Ambience</th><td><audio controls preload="none" src="/sounds/Medium/ambience.wav"></audio><div class="path">/sounds/Medium/ambience.wav</div></td></tr>
-      <tr><th>Mate / resign lead-in</th><td><audio controls preload="none" src="/sounds/Medium/checkmateLoss.wav"></audio><div class="path">/sounds/Medium/checkmateLoss.wav</div></td></tr>
-      <tr><th>best</th><td><audio controls preload="none" src="/sounds/Medium/best.wav"></audio><div class="path">/sounds/Medium/best.wav</div></td></tr>
-      <tr><th>great</th><td><audio controls preload="none" src="/sounds/Medium/great.wav"></audio><div class="path">/sounds/Medium/great.wav</div></td></tr>
-      <tr><th>excellent</th><td><audio controls preload="none" src="/sounds/Medium/excellent.wav"></audio><div class="path">/sounds/Medium/excellent.wav</div></td></tr>
-      <tr><th>good</th><td><audio controls preload="none" src="/sounds/Medium/good.wav"></audio><div class="path">/sounds/Medium/good.wav</div></td></tr>
-      <tr><th>book</th><td><audio controls preload="none" src="/sounds/Medium/bookMove.wav"></audio><div class="path">/sounds/Medium/bookMove.wav</div></td></tr>
-      <tr><th>inaccuracy</th><td><audio controls preload="none" src="/sounds/Medium/inaccuracy.wav"></audio><div class="path">/sounds/Medium/inaccuracy.wav</div></td></tr>
-      <tr><th>mistake</th><td><audio controls preload="none" src="/sounds/Medium/mistake.wav"></audio><div class="path">/sounds/Medium/mistake.wav</div></td></tr>
-      <tr><th>blunder</th><td><audio controls preload="none" src="/sounds/Medium/blunder.wav"></audio><div class="path">/sounds/Medium/blunder.wav</div></td></tr>
-      <tr><th>checkmate (win sting)</th><td><audio controls preload="none" src="/sounds/Medium/checkmate_win.wav"></audio><div class="path">/sounds/Medium/checkmate_win.wav</div></td></tr>
+      <tr><th>Ambience</th><td><audio controls preload="none" src="/Sounds/Medium/ambience.wav"></audio><div class="path">/Sounds/Medium/ambience.wav</div></td></tr>
+      <tr><th>Mate / resign lead-in</th><td><audio controls preload="none" src="/Sounds/Medium/checkmateLoss.wav"></audio><div class="path">/Sounds/Medium/checkmateLoss.wav</div></td></tr>
+      <tr><th>best</th><td><audio controls preload="none" src="/Sounds/Medium/best.wav"></audio><div class="path">/Sounds/Medium/best.wav</div></td></tr>
+      <tr><th>great</th><td><audio controls preload="none" src="/Sounds/Medium/great.wav"></audio><div class="path">/Sounds/Medium/great.wav</div></td></tr>
+      <tr><th>excellent</th><td><audio controls preload="none" src="/Sounds/Medium/excellent.wav"></audio><div class="path">/Sounds/Medium/excellent.wav</div></td></tr>
+      <tr><th>good</th><td><audio controls preload="none" src="/Sounds/Medium/good.wav"></audio><div class="path">/Sounds/Medium/good.wav</div></td></tr>
+      <tr><th>book</th><td><audio controls preload="none" src="/Sounds/Medium/bookMove.wav"></audio><div class="path">/Sounds/Medium/bookMove.wav</div></td></tr>
+      <tr><th>inaccuracy</th><td><audio controls preload="none" src="/Sounds/Medium/inaccuracy.wav"></audio><div class="path">/Sounds/Medium/inaccuracy.wav</div></td></tr>
+      <tr><th>mistake</th><td><audio controls preload="none" src="/Sounds/Medium/mistake.wav"></audio><div class="path">/Sounds/Medium/mistake.wav</div></td></tr>
+      <tr><th>blunder</th><td><audio controls preload="none" src="/Sounds/Medium/blunder.wav"></audio><div class="path">/Sounds/Medium/blunder.wav</div></td></tr>
+      <tr><th>checkmate (win sting)</th><td><audio controls preload="none" src="/Sounds/Medium/checkmate_win.wav"></audio><div class="path">/Sounds/Medium/checkmate_win.wav</div></td></tr>
     </tbody>
   </table>
 
@@ -116,17 +116,17 @@
   <table>
     <thead><tr><th>Role</th><th>Play</th></tr></thead>
     <tbody>
-      <tr><th>Ambience</th><td><audio controls preload="none" src="/sounds/Hard/ambience.wav"></audio><div class="path">/sounds/Hard/ambience.wav</div></td></tr>
-      <tr><th>Mate / resign lead-in</th><td><audio controls preload="none" src="/sounds/Hard/checkmate_loss.wav"></audio><div class="path">/sounds/Hard/checkmate_loss.wav</div></td></tr>
-      <tr><th>best</th><td><audio controls preload="none" src="/sounds/Hard/best.wav"></audio><div class="path">/sounds/Hard/best.wav</div></td></tr>
-      <tr><th>great</th><td><audio controls preload="none" src="/sounds/Hard/great.wav"></audio><div class="path">/sounds/Hard/great.wav</div></td></tr>
-      <tr><th>excellent</th><td><audio controls preload="none" src="/sounds/Hard/excellent.wav"></audio><div class="path">/sounds/Hard/excellent.wav</div></td></tr>
-      <tr><th>good</th><td><audio controls preload="none" src="/sounds/Hard/good.wav"></audio><div class="path">/sounds/Hard/good.wav</div></td></tr>
-      <tr><th>book</th><td><audio controls preload="none" src="/sounds/Hard/book.wav"></audio><div class="path">/sounds/Hard/book.wav</div></td></tr>
-      <tr><th>inaccuracy</th><td><audio controls preload="none" src="/sounds/Hard/inaccuracy.wav"></audio><div class="path">/sounds/Hard/inaccuracy.wav</div></td></tr>
-      <tr><th>mistake</th><td><audio controls preload="none" src="/sounds/Hard/mistake.wav"></audio><div class="path">/sounds/Hard/mistake.wav</div></td></tr>
-      <tr><th>blunder</th><td><audio controls preload="none" src="/sounds/Hard/blunder.wav"></audio><div class="path">/sounds/Hard/blunder.wav</div></td></tr>
-      <tr><th>checkmate (win sting)</th><td><audio controls preload="none" src="/sounds/Hard/checkmate_win.wav"></audio><div class="path">/sounds/Hard/checkmate_win.wav</div></td></tr>
+      <tr><th>Ambience</th><td><audio controls preload="none" src="/Sounds/Hard/ambience.wav"></audio><div class="path">/Sounds/Hard/ambience.wav</div></td></tr>
+      <tr><th>Mate / resign lead-in</th><td><audio controls preload="none" src="/Sounds/Hard/checkmate_loss.wav"></audio><div class="path">/Sounds/Hard/checkmate_loss.wav</div></td></tr>
+      <tr><th>best</th><td><audio controls preload="none" src="/Sounds/Hard/best.wav"></audio><div class="path">/Sounds/Hard/best.wav</div></td></tr>
+      <tr><th>great</th><td><audio controls preload="none" src="/Sounds/Hard/great.wav"></audio><div class="path">/Sounds/Hard/great.wav</div></td></tr>
+      <tr><th>excellent</th><td><audio controls preload="none" src="/Sounds/Hard/excellent.wav"></audio><div class="path">/Sounds/Hard/excellent.wav</div></td></tr>
+      <tr><th>good</th><td><audio controls preload="none" src="/Sounds/Hard/good.wav"></audio><div class="path">/Sounds/Hard/good.wav</div></td></tr>
+      <tr><th>book</th><td><audio controls preload="none" src="/Sounds/Hard/book.wav"></audio><div class="path">/Sounds/Hard/book.wav</div></td></tr>
+      <tr><th>inaccuracy</th><td><audio controls preload="none" src="/Sounds/Hard/inaccuracy.wav"></audio><div class="path">/Sounds/Hard/inaccuracy.wav</div></td></tr>
+      <tr><th>mistake</th><td><audio controls preload="none" src="/Sounds/Hard/mistake.wav"></audio><div class="path">/Sounds/Hard/mistake.wav</div></td></tr>
+      <tr><th>blunder</th><td><audio controls preload="none" src="/Sounds/Hard/blunder.wav"></audio><div class="path">/Sounds/Hard/blunder.wav</div></td></tr>
+      <tr><th>checkmate (win sting)</th><td><audio controls preload="none" src="/Sounds/Hard/checkmate_win.wav"></audio><div class="path">/Sounds/Hard/checkmate_win.wav</div></td></tr>
     </tbody>
   </table>
 
@@ -138,14 +138,14 @@
       <tr><th>Resign</th><td><audio controls preload="none" src="/static/sounds/resign.mp3"></audio><div class="path">/static/sounds/resign.mp3</div></td></tr>
     </tbody>
   </table>
-  <!-- Keep in sync with PACK_SOUNDS_CACHE_VER in static/app.js after replacing Sounds/*.wav -->
+  <!-- Keep in sync with PACK_SOUNDS_CACHE_VER in static/app.js -->
   <script>
     (function () {
-      var ver = '109a1f9';
+      var ver = '109a1f9b';
       document.querySelectorAll('audio[src]').forEach(function (el) {
         var s = el.getAttribute('src');
         if (!s || s.indexOf('v=') !== -1) return;
-        if (s.indexOf('/sounds/') !== 0 && s.indexOf('/static/sounds/') !== 0) return;
+        if (s.indexOf('/Sounds/') !== 0 && s.indexOf('/static/sounds/') !== 0) return;
         el.src = s + (s.indexOf('?') >= 0 ? '&' : '?') + 'v=' + ver;
       });
     })();

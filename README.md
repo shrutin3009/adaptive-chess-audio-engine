@@ -56,11 +56,11 @@ Mapping to playback is in **`static/app.js`** (pack paths, `MIX_*` levels, synth
 
 ## Preview / test sounds (not on the game page)
 
-Pack audio files live under **`Sounds/`** (capital **S** — that is how the folder is named in git). Shared stings live under **`static/sounds/`**. The Flask app serves pack files at **`/sounds/…`** URLs (lowercase path — see examples below). There is **no** sound tester UI on the chess page — use this section instead.
+Pack audio files live under **`Sounds/`** (capital **S** — same in git and in HTTP). Shared stings live under **`static/sounds/`**. The Flask app serves packs at **`/Sounds/…`** (legacy **`/sounds/…`** still works). There is **no** sound tester UI on the chess page — use this section instead.
 
 ### All sounds in one page (`sound_test.html`)
 
-The repo includes **[`static/sound_test.html`](./static/sound_test.html)**, a standalone page with **HTML5 audio controls** for every pack file plus the shared static stings. It uses the **same HTTP paths** as the game (`/sounds/...` and `/static/sounds/...`). On disk / in git, pack WAVs are under **`Sounds/`**, not `sounds/`.
+The repo includes **[`static/sound_test.html`](./static/sound_test.html)**, a standalone page with **HTML5 audio controls** for every pack file plus the shared static stings. It uses the **same HTTP paths** as the game (`/Sounds/...` and `/static/sounds/...`).
 
 **How to use it**
 
@@ -127,8 +127,8 @@ Base URL: `http://127.0.0.1:5001`
 
 Examples:
 
-- `http://127.0.0.1:5001/sounds/Medium/ambience.wav`
-- `http://127.0.0.1:5001/sounds/Hard/checkmate_loss.wav`
+- `http://127.0.0.1:5001/Sounds/Medium/ambience.wav`
+- `http://127.0.0.1:5001/Sounds/Hard/checkmate_loss.wav`
 - `http://127.0.0.1:5001/static/sounds/checkmate.wav`
 
 Replace `Medium` / `Hard` / `Easy` and the filename to audition every file listed in the tables above.
