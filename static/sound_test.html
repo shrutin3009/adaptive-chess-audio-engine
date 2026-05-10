@@ -138,5 +138,17 @@
       <tr><th>Resign</th><td><audio controls preload="none" src="/static/sounds/resign.mp3"></audio><div class="path">/static/sounds/resign.mp3</div></td></tr>
     </tbody>
   </table>
+  <!-- Keep in sync with PACK_SOUNDS_CACHE_VER in static/app.js after replacing Sounds/*.wav -->
+  <script>
+    (function () {
+      var ver = '109a1f9';
+      document.querySelectorAll('audio[src]').forEach(function (el) {
+        var s = el.getAttribute('src');
+        if (!s || s.indexOf('v=') !== -1) return;
+        if (s.indexOf('/sounds/') !== 0 && s.indexOf('/static/sounds/') !== 0) return;
+        el.src = s + (s.indexOf('?') >= 0 ? '&' : '?') + 'v=' + ver;
+      });
+    })();
+  </script>
 </body>
 </html>

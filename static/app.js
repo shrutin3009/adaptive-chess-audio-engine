@@ -26,6 +26,8 @@
   const MIX_HARD_AMBIENCE_MUL = 0.78;
   /** Checkmate-loss WAV (and resign lead-in) in Hard — extra duck below other Hard SFX. */
   const MIX_HARD_MATE_LOSS_EXTRA_MUL = 0.66;
+  /** Bump when replacing files under ``Sounds/`` — browsers cache ``/sounds/*.wav`` aggressively without this. */
+  const PACK_SOUNDS_CACHE_VER = '109a1f9';
   const MIX_SFX_MOVE = 0.32;
   /** Move-sting tweaks vs MIX_SFX_MOVE. */
   const MIX_SFX_EXCELLENT = 0.66;
@@ -131,6 +133,13 @@
     return 'Medium';
   }
 
+  /** Append cache-buster so updated pack WAVs are fetched (see ``PACK_SOUNDS_CACHE_VER``). */
+  function packSoundUrl(path) {
+    if (!path || path.indexOf('/sounds/') !== 0) return path;
+    var sep = path.indexOf('?') >= 0 ? '&' : '?';
+    return path + sep + 'v=' + PACK_SOUNDS_CACHE_VER;
+  }
+
   /** Easy: sine tones only — no ``sounds/Medium|Hard`` or static dramatic files. */
   function isEasyMode() {
     return (botDifficulty || 'medium').toLowerCase() === 'easy';
@@ -170,7 +179,7 @@
     if (packFolder === 'Hard' && !HARD_PACK_CLASSIFICATIONS[classification]) {
       return null;
     }
-    return '/sounds/' + packFolder + '/' + fname;
+    return packSoundUrl('/sounds/' + packFolder + '/' + fname);
   }
 
   function moveSoundUrl(classification) {
@@ -179,14 +188,14 @@
   }
 
   function ambienceUrl() {
-    return '/sounds/' + soundsPackFolder() + '/ambience.wav';
+    return packSoundUrl('/sounds/' + soundsPackFolder() + '/ambience.wav');
   }
 
   function mateLossUrlForPack(packFolder) {
     if (packFolder === 'Hard') {
-      return '/sounds/Hard/checkmate_loss.wav';
+      return packSoundUrl('/sounds/Hard/checkmate_loss.wav');
     }
-    return '/sounds/' + packFolder + '/checkmateLoss.wav';
+    return packSoundUrl('/sounds/' + packFolder + '/checkmateLoss.wav');
   }
 
   /** Medium: ``checkmateLoss.wav``. Hard: ``checkmate_loss.wav``. */
@@ -377,7 +386,7 @@
       if (!kind) return;
       withRunningAudio(function () {});
       if (kind === 'ambience-start') {
-        startTestAmbienceFromUrl('/sounds/Hard/ambience.wav');
+        startTestAmbienceFromUrl(packSoundUrl('/sounds/Hard/ambience.wav'));
         return;
       }
       if (kind === 'ambience-stop') {
