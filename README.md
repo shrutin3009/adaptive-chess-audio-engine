@@ -7,7 +7,7 @@ After each **human** move, the server classifies it. The **primary** labels come
 **Audio (see `static/app.js`):**
 
 - **Easy** — Web Audio **sine** stings per label; **no** Medium/Hard move WAVs; **Easy** pack **`ambience.wav`** for the bed; resign uses a short synth gesture (no pack mate-loss / resign MP3).
-- **Medium / Hard** — WAVs under `sounds/Medium/` and `sounds/Hard/` (move stings, ambience, mate loss, etc.), plus shared static stings where used; mix constants differ (including Hard-only tweaks for some labels).
+- **Medium / Hard** — WAVs under `Sounds/Medium/` and `Sounds/Hard/` in the repo (move stings, ambience, mate loss, etc.), plus shared static stings where used; mix constants differ (including Hard-only tweaks for some labels).
 
 ---
 
@@ -56,11 +56,11 @@ Mapping to playback is in **`static/app.js`** (pack paths, `MIX_*` levels, synth
 
 ## Preview / test sounds (not on the game page)
 
-Sound files live under `sounds/` and `static/sounds/`. There is **no** sound tester UI on the chess page — use this section instead.
+Pack audio files live under **`Sounds/`** (capital **S** — that is how the folder is named in git). Shared stings live under **`static/sounds/`**. The Flask app serves pack files at **`/sounds/…`** URLs (lowercase path — see examples below). There is **no** sound tester UI on the chess page — use this section instead.
 
 ### All sounds in one page (`sound_test.html`)
 
-The repo includes **[`static/sound_test.html`](./static/sound_test.html)**, a standalone page with **HTML5 audio controls** for every pack file plus the shared static stings. It uses the **same URL paths** as the game (`/sounds/...` and `/static/sounds/...`).
+The repo includes **[`static/sound_test.html`](./static/sound_test.html)**, a standalone page with **HTML5 audio controls** for every pack file plus the shared static stings. It uses the **same HTTP paths** as the game (`/sounds/...` and `/static/sounds/...`). On disk / in git, pack WAVs are under **`Sounds/`**, not `sounds/`.
 
 **How to use it**
 
@@ -77,39 +77,39 @@ Click a link to open the file in the browser; GitHub will show or download the a
 
 | Role | File |
 |------|------|
-| Ambience bed | [sounds/Easy/ambience.wav](./sounds/Easy/ambience.wav) |
+| Ambience bed | [Sounds/Easy/ambience.wav](./Sounds/Easy/ambience.wav) |
 
 **Medium**
 
 | Role | File |
 |------|------|
-| Ambience bed | [sounds/Medium/ambience.wav](./sounds/Medium/ambience.wav) |
-| Mate / resign lead-in | [sounds/Medium/checkmateLoss.wav](./sounds/Medium/checkmateLoss.wav) |
-| **best** | [sounds/Medium/best.wav](./sounds/Medium/best.wav) |
-| **great** | [sounds/Medium/great.wav](./sounds/Medium/great.wav) |
-| **excellent** | [sounds/Medium/excellent.wav](./sounds/Medium/excellent.wav) |
-| **good** | [sounds/Medium/good.wav](./sounds/Medium/good.wav) |
-| **book** | [sounds/Medium/bookMove.wav](./sounds/Medium/bookMove.wav) |
-| **inaccuracy** | [sounds/Medium/inaccuracy.wav](./sounds/Medium/inaccuracy.wav) |
-| **mistake** | [sounds/Medium/mistake.wav](./sounds/Medium/mistake.wav) |
-| **blunder** | [sounds/Medium/blunder.wav](./sounds/Medium/blunder.wav) |
-| **checkmate** (win sting, pack) | [sounds/Medium/checkmate_win.wav](./sounds/Medium/checkmate_win.wav) |
+| Ambience bed | [Sounds/Medium/ambience.wav](./Sounds/Medium/ambience.wav) |
+| Mate / resign lead-in | [Sounds/Medium/checkmateLoss.wav](./Sounds/Medium/checkmateLoss.wav) |
+| **best** | [Sounds/Medium/best.wav](./Sounds/Medium/best.wav) |
+| **great** | [Sounds/Medium/great.wav](./Sounds/Medium/great.wav) |
+| **excellent** | [Sounds/Medium/excellent.wav](./Sounds/Medium/excellent.wav) |
+| **good** | [Sounds/Medium/good.wav](./Sounds/Medium/good.wav) |
+| **book** | [Sounds/Medium/bookMove.wav](./Sounds/Medium/bookMove.wav) |
+| **inaccuracy** | [Sounds/Medium/inaccuracy.wav](./Sounds/Medium/inaccuracy.wav) |
+| **mistake** | [Sounds/Medium/mistake.wav](./Sounds/Medium/mistake.wav) |
+| **blunder** | [Sounds/Medium/blunder.wav](./Sounds/Medium/blunder.wav) |
+| **checkmate** (win sting, pack) | [Sounds/Medium/checkmate_win.wav](./Sounds/Medium/checkmate_win.wav) |
 
 **Hard** — same roles as Medium except **book** uses `book.wav`; mate loss uses a different filename.
 
 | Role | File |
 |------|------|
-| Ambience bed | [sounds/Hard/ambience.wav](./sounds/Hard/ambience.wav) |
-| Mate / resign lead-in | [sounds/Hard/checkmate_loss.wav](./sounds/Hard/checkmate_loss.wav) |
-| **best** | [sounds/Hard/best.wav](./sounds/Hard/best.wav) |
-| **great** | [sounds/Hard/great.wav](./sounds/Hard/great.wav) |
-| **excellent** | [sounds/Hard/excellent.wav](./sounds/Hard/excellent.wav) |
-| **good** | [sounds/Hard/good.wav](./sounds/Hard/good.wav) |
-| **book** | [sounds/Hard/book.wav](./sounds/Hard/book.wav) |
-| **inaccuracy** | [sounds/Hard/inaccuracy.wav](./sounds/Hard/inaccuracy.wav) |
-| **mistake** | [sounds/Hard/mistake.wav](./sounds/Hard/mistake.wav) |
-| **blunder** | [sounds/Hard/blunder.wav](./sounds/Hard/blunder.wav) |
-| **checkmate** (win sting, pack) | [sounds/Hard/checkmate_win.wav](./sounds/Hard/checkmate_win.wav) |
+| Ambience bed | [Sounds/Hard/ambience.wav](./Sounds/Hard/ambience.wav) |
+| Mate / resign lead-in | [Sounds/Hard/checkmate_loss.wav](./Sounds/Hard/checkmate_loss.wav) |
+| **best** | [Sounds/Hard/best.wav](./Sounds/Hard/best.wav) |
+| **great** | [Sounds/Hard/great.wav](./Sounds/Hard/great.wav) |
+| **excellent** | [Sounds/Hard/excellent.wav](./Sounds/Hard/excellent.wav) |
+| **good** | [Sounds/Hard/good.wav](./Sounds/Hard/good.wav) |
+| **book** | [Sounds/Hard/book.wav](./Sounds/Hard/book.wav) |
+| **inaccuracy** | [Sounds/Hard/inaccuracy.wav](./Sounds/Hard/inaccuracy.wav) |
+| **mistake** | [Sounds/Hard/mistake.wav](./Sounds/Hard/mistake.wav) |
+| **blunder** | [Sounds/Hard/blunder.wav](./Sounds/Hard/blunder.wav) |
+| **checkmate** (win sting, pack) | [Sounds/Hard/checkmate_win.wav](./Sounds/Hard/checkmate_win.wav) |
 
 **Shared static stings** (served from `static/`)
 
@@ -132,3 +132,5 @@ Examples:
 - `http://127.0.0.1:5001/static/sounds/checkmate.wav`
 
 Replace `Medium` / `Hard` / `Easy` and the filename to audition every file listed in the tables above.
+
+To push an updated pack WAV: overwrite **`Sounds/…`** locally (not only `static/sounds/`), then run **`git add Sounds/…`**, **`git commit`**, **`git push`** so GitHub matches your machine.
