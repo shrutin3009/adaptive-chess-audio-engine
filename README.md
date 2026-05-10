@@ -51,3 +51,84 @@ You may see exactly one of:
 `best`, `great`, `excellent`, `good`, `inaccuracy`, `mistake`, `blunder`, `book`, `checkmate`.
 
 Mapping to playback is in **`static/app.js`** (pack paths, `MIX_*` levels, synth fallback, easy vs medium/hard).
+
+---
+
+## Preview / test sounds (not on the game page)
+
+Sound files live under `sounds/` and `static/sounds/`. There is **no** sound tester UI on the chess page — use this section instead.
+
+### All sounds in one page (`sound_test.html`)
+
+The repo includes **[`static/sound_test.html`](./static/sound_test.html)**, a standalone page with **HTML5 audio controls** for every pack file plus the shared static stings. It uses the **same URL paths** as the game (`/sounds/...` and `/static/sounds/...`).
+
+**How to use it**
+
+1. Start the Flask app (e.g. `./restart_server.sh`).
+2. Open **`http://127.0.0.1:5001/static/sound_test.html`** in your browser (use your `PORT` if not `5001`).
+
+Opening `sound_test.html` as a local `file://` document will **not** work: the audio elements expect those paths on the running server. Keep the dev server up while testing.
+
+### On GitHub (or any clone)
+
+Click a link to open the file in the browser; GitHub will show or download the asset (WAV/MP3).
+
+**Easy** — move labels use **synth** in the app; only ambience is a pack WAV.
+
+| Role | File |
+|------|------|
+| Ambience bed | [sounds/Easy/ambience.wav](./sounds/Easy/ambience.wav) |
+
+**Medium**
+
+| Role | File |
+|------|------|
+| Ambience bed | [sounds/Medium/ambience.wav](./sounds/Medium/ambience.wav) |
+| Mate / resign lead-in | [sounds/Medium/checkmateLoss.wav](./sounds/Medium/checkmateLoss.wav) |
+| **best** | [sounds/Medium/best.wav](./sounds/Medium/best.wav) |
+| **great** | [sounds/Medium/great.wav](./sounds/Medium/great.wav) |
+| **excellent** | [sounds/Medium/excellent.wav](./sounds/Medium/excellent.wav) |
+| **good** | [sounds/Medium/good.wav](./sounds/Medium/good.wav) |
+| **book** | [sounds/Medium/bookMove.wav](./sounds/Medium/bookMove.wav) |
+| **inaccuracy** | [sounds/Medium/inaccuracy.wav](./sounds/Medium/inaccuracy.wav) |
+| **mistake** | [sounds/Medium/mistake.wav](./sounds/Medium/mistake.wav) |
+| **blunder** | [sounds/Medium/blunder.wav](./sounds/Medium/blunder.wav) |
+| **checkmate** (win sting, pack) | [sounds/Medium/checkmate_win.wav](./sounds/Medium/checkmate_win.wav) |
+
+**Hard** — same roles as Medium except **book** uses `book.wav`; mate loss uses a different filename.
+
+| Role | File |
+|------|------|
+| Ambience bed | [sounds/Hard/ambience.wav](./sounds/Hard/ambience.wav) |
+| Mate / resign lead-in | [sounds/Hard/checkmate_loss.wav](./sounds/Hard/checkmate_loss.wav) |
+| **best** | [sounds/Hard/best.wav](./sounds/Hard/best.wav) |
+| **great** | [sounds/Hard/great.wav](./sounds/Hard/great.wav) |
+| **excellent** | [sounds/Hard/excellent.wav](./sounds/Hard/excellent.wav) |
+| **good** | [sounds/Hard/good.wav](./sounds/Hard/good.wav) |
+| **book** | [sounds/Hard/book.wav](./sounds/Hard/book.wav) |
+| **inaccuracy** | [sounds/Hard/inaccuracy.wav](./sounds/Hard/inaccuracy.wav) |
+| **mistake** | [sounds/Hard/mistake.wav](./sounds/Hard/mistake.wav) |
+| **blunder** | [sounds/Hard/blunder.wav](./sounds/Hard/blunder.wav) |
+| **checkmate** (win sting, pack) | [sounds/Hard/checkmate_win.wav](./sounds/Hard/checkmate_win.wav) |
+
+**Shared static stings** (served from `static/`)
+
+| Role | File |
+|------|------|
+| Checkmate (extra layer in Medium/Hard win sequence) | [static/sounds/checkmate.wav](./static/sounds/checkmate.wav) |
+| Resign sting (not Easy) | [static/sounds/resign.mp3](./static/sounds/resign.mp3) |
+
+### With the dev server (matches in-game URLs)
+
+1. Start the app: `./restart_server.sh` (default **http://127.0.0.1:5001** — override with `PORT=…`).
+2. Either open **`/static/sound_test.html`** (see above) **or** paste individual URLs in the browser — same assets as the UI.
+
+Base URL: `http://127.0.0.1:5001`
+
+Examples:
+
+- `http://127.0.0.1:5001/sounds/Medium/ambience.wav`
+- `http://127.0.0.1:5001/sounds/Hard/checkmate_loss.wav`
+- `http://127.0.0.1:5001/static/sounds/checkmate.wav`
+
+Replace `Medium` / `Hard` / `Easy` and the filename to audition every file listed in the tables above.

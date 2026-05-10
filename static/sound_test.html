@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChessMusic — sound test</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 2rem 1.25rem 4rem;
+      background: #0a0a0a;
+      color: #e8e8e8;
+      line-height: 1.5;
+      max-width: 52rem;
+      margin-inline: auto;
+    }
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin: 0 0 0.35rem;
+    }
+    .hint {
+      font-size: 0.9rem;
+      color: #9a9a9a;
+      margin: 0 0 1.75rem;
+    }
+    .hint code {
+      background: #1e1e1e;
+      padding: 0.12rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.88em;
+    }
+    h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin: 2rem 0 0.75rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid #333;
+      color: #f0ebe4;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.45rem 0.5rem;
+      vertical-align: middle;
+    }
+    th {
+      color: #b8b8b8;
+      font-weight: 500;
+      width: 11rem;
+    }
+    tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    audio {
+      width: min(100%, 280px);
+      height: 36px;
+      vertical-align: middle;
+    }
+    .path {
+      font-size: 0.78rem;
+      color: #777;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <h1>ChessMusic — sound test</h1>
+  <p class="hint">
+    Start the Flask app, then open this page from the dev server (paths are root-relative).
+    Example: <code>http://127.0.0.1:5001/static/sound_test.html</code>
+    — change port if you use <code>PORT=…</code>.
+  </p>
+
+  <h2>Easy</h2>
+  <p class="hint" style="margin-bottom: 0.75rem;">In-game move labels use synth; only ambience is a pack WAV.</p>
+  <table>
+    <thead><tr><th>Role</th><th>Play</th></tr></thead>
+    <tbody>
+      <tr>
+        <th>Ambience</th>
+        <td>
+          <audio controls preload="none" src="/sounds/Easy/ambience.wav"></audio>
+          <div class="path">/sounds/Easy/ambience.wav</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Medium</h2>
+  <table>
+    <thead><tr><th>Role</th><th>Play</th></tr></thead>
+    <tbody>
+      <tr><th>Ambience</th><td><audio controls preload="none" src="/sounds/Medium/ambience.wav"></audio><div class="path">/sounds/Medium/ambience.wav</div></td></tr>
+      <tr><th>Mate / resign lead-in</th><td><audio controls preload="none" src="/sounds/Medium/checkmateLoss.wav"></audio><div class="path">/sounds/Medium/checkmateLoss.wav</div></td></tr>
+      <tr><th>best</th><td><audio controls preload="none" src="/sounds/Medium/best.wav"></audio><div class="path">/sounds/Medium/best.wav</div></td></tr>
+      <tr><th>great</th><td><audio controls preload="none" src="/sounds/Medium/great.wav"></audio><div class="path">/sounds/Medium/great.wav</div></td></tr>
+      <tr><th>excellent</th><td><audio controls preload="none" src="/sounds/Medium/excellent.wav"></audio><div class="path">/sounds/Medium/excellent.wav</div></td></tr>
+      <tr><th>good</th><td><audio controls preload="none" src="/sounds/Medium/good.wav"></audio><div class="path">/sounds/Medium/good.wav</div></td></tr>
+      <tr><th>book</th><td><audio controls preload="none" src="/sounds/Medium/bookMove.wav"></audio><div class="path">/sounds/Medium/bookMove.wav</div></td></tr>
+      <tr><th>inaccuracy</th><td><audio controls preload="none" src="/sounds/Medium/inaccuracy.wav"></audio><div class="path">/sounds/Medium/inaccuracy.wav</div></td></tr>
+      <tr><th>mistake</th><td><audio controls preload="none" src="/sounds/Medium/mistake.wav"></audio><div class="path">/sounds/Medium/mistake.wav</div></td></tr>
+      <tr><th>blunder</th><td><audio controls preload="none" src="/sounds/Medium/blunder.wav"></audio><div class="path">/sounds/Medium/blunder.wav</div></td></tr>
+      <tr><th>checkmate (win sting)</th><td><audio controls preload="none" src="/sounds/Medium/checkmate_win.wav"></audio><div class="path">/sounds/Medium/checkmate_win.wav</div></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Hard</h2>
+  <table>
+    <thead><tr><th>Role</th><th>Play</th></tr></thead>
+    <tbody>
+      <tr><th>Ambience</th><td><audio controls preload="none" src="/sounds/Hard/ambience.wav"></audio><div class="path">/sounds/Hard/ambience.wav</div></td></tr>
+      <tr><th>Mate / resign lead-in</th><td><audio controls preload="none" src="/sounds/Hard/checkmate_loss.wav"></audio><div class="path">/sounds/Hard/checkmate_loss.wav</div></td></tr>
+      <tr><th>best</th><td><audio controls preload="none" src="/sounds/Hard/best.wav"></audio><div class="path">/sounds/Hard/best.wav</div></td></tr>
+      <tr><th>great</th><td><audio controls preload="none" src="/sounds/Hard/great.wav"></audio><div class="path">/sounds/Hard/great.wav</div></td></tr>
+      <tr><th>excellent</th><td><audio controls preload="none" src="/sounds/Hard/excellent.wav"></audio><div class="path">/sounds/Hard/excellent.wav</div></td></tr>
+      <tr><th>good</th><td><audio controls preload="none" src="/sounds/Hard/good.wav"></audio><div class="path">/sounds/Hard/good.wav</div></td></tr>
+      <tr><th>book</th><td><audio controls preload="none" src="/sounds/Hard/book.wav"></audio><div class="path">/sounds/Hard/book.wav</div></td></tr>
+      <tr><th>inaccuracy</th><td><audio controls preload="none" src="/sounds/Hard/inaccuracy.wav"></audio><div class="path">/sounds/Hard/inaccuracy.wav</div></td></tr>
+      <tr><th>mistake</th><td><audio controls preload="none" src="/sounds/Hard/mistake.wav"></audio><div class="path">/sounds/Hard/mistake.wav</div></td></tr>
+      <tr><th>blunder</th><td><audio controls preload="none" src="/sounds/Hard/blunder.wav"></audio><div class="path">/sounds/Hard/blunder.wav</div></td></tr>
+      <tr><th>checkmate (win sting)</th><td><audio controls preload="none" src="/sounds/Hard/checkmate_win.wav"></audio><div class="path">/sounds/Hard/checkmate_win.wav</div></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Shared static</h2>
+  <table>
+    <thead><tr><th>Role</th><th>Play</th></tr></thead>
+    <tbody>
+      <tr><th>Checkmate (extra layer)</th><td><audio controls preload="none" src="/static/sounds/checkmate.wav"></audio><div class="path">/static/sounds/checkmate.wav</div></td></tr>
+      <tr><th>Resign</th><td><audio controls preload="none" src="/static/sounds/resign.mp3"></audio><div class="path">/static/sounds/resign.mp3</div></td></tr>
+    </tbody>
+  </table>
+</body>
+</html>

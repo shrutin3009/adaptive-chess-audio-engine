@@ -24,6 +24,8 @@
   /** Hard pack masters read hot — scale SFX + bed vs Medium. */
   const MIX_HARD_PACK_MUL = 0.72;
   const MIX_HARD_AMBIENCE_MUL = 0.78;
+  /** Checkmate-loss WAV (and resign lead-in) in Hard — extra duck below other Hard SFX. */
+  const MIX_HARD_MATE_LOSS_EXTRA_MUL = 0.66;
   const MIX_SFX_MOVE = 0.32;
   /** Move-sting tweaks vs MIX_SFX_MOVE. */
   const MIX_SFX_EXCELLENT = 0.66;
@@ -51,6 +53,8 @@
 
   let botDifficulty = 'medium';
   let isBotThinking = false;
+  /** Shown under #status when /api/bot-move fails (there is no #log in the layout). */
+  let botErrorMessage = '';
   /** @type {ReturnType<typeof setTimeout> | null} */
   let botDelayTimer = null;
 
@@ -650,7 +654,10 @@
     }
     var lossPeak = MIX_SFX_MATE_LOSS;
     if (url && url.indexOf('/Hard/') !== -1) {
-      lossPeak = Math.min(0.98, lossPeak * MIX_HARD_PACK_MUL);
+      lossPeak = Math.min(
+        0.98,
+        lossPeak * MIX_HARD_PACK_MUL * MIX_HARD_MATE_LOSS_EXTRA_MUL
+      );
     }
     playSfxUrl(
       url,
@@ -775,6 +782,15 @@
     if (logEl) logEl.textContent = text;
   }
 
+  function clearBotError() {
+    botErrorMessage = '';
+  }
+
+  function setBotError(msg) {
+    botErrorMessage = msg || '';
+    updateStatus();
+  }
+
   function syncControlButtons() {
     if (btnStart) {
       var finished =
@@ -812,6 +828,9 @@
         ' | You: ' +
         (humanColor === 'w' ? 'White' : 'Black') +
         (isBotThinking ? ' | Bot thinking…' : '');
+    }
+    if (botErrorMessage) {
+      status = botErrorMessage + (status ? ' — ' + status : '');
     }
     if (statusEl) statusEl.textContent = status;
     if (fenOut) fenOut.textContent = game.fen();
@@ -1046,11 +1065,15 @@
           return;
         }
         if (!result.ok) {
-          setLog('Bot error: ' + (result.data.error || JSON.stringify(result.data)));
+          var errText =
+            'Bot error: ' + (result.data.error || JSON.stringify(result.data));
+          setLog(errText);
+          setBotError(errText);
           isBotThinking = false;
           updateStatus();
           return;
         }
+        clearBotError();
         var d = result.data;
         var fenBefore = game.fen();
         var moved = applyUciMove(d.uci);
@@ -1071,7 +1094,9 @@
         });
       })
       .catch(function (err) {
-        setLog('Bot request failed: ' + err);
+        var errText = 'Bot request failed: ' + err;
+        setLog(errText);
+        setBotError(errText);
         console.error(err);
         isBotThinking = false;
         updateStatus();
@@ -1082,6 +1107,7 @@
     readControlsFromDom();
     clearBotDelayTimer();
     stopTestAmbience();
+    clearBotError();
 
     isGameOver = false;
     winner = null;
@@ -1136,7 +1162,10 @@
       }
       var resignLossPeak = MIX_SFX_MATE_LOSS;
       if (lossUrl.indexOf('/Hard/') !== -1) {
-        resignLossPeak = Math.min(0.98, resignLossPeak * MIX_HARD_PACK_MUL);
+        resignLossPeak = Math.min(
+          0.98,
+          resignLossPeak * MIX_HARD_PACK_MUL * MIX_HARD_MATE_LOSS_EXTRA_MUL
+        );
       }
       playSfxUrl(
         lossUrl,

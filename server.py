@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 import atexit
+import threading
 from typing import Any, Optional
 
 import chess
@@ -45,6 +46,8 @@ def serve_project_sounds(filename: str):
     return send_from_directory(_SOUNDS_ROOT, filename)
 
 _engine: Optional[chess.engine.SimpleEngine] = None
+# One UCI process — all commands must be serialized (threaded WSGI / overlapping fetches).
+_ENGINE_LOCK = threading.Lock()
 
 
 def get_engine() -> chess.engine.SimpleEngine:
@@ -220,8 +223,9 @@ def api_evaluate():
     except ValueError as e:
         return jsonify({"error": f"Invalid FEN: {e}"}), 400
     try:
-        engine = get_engine()
-        ev = eval_white_cp(board, engine)
+        with _ENGINE_LOCK:
+            engine = get_engine()
+            ev = eval_white_cp(board, engine)
     except FileNotFoundError as e:
         return jsonify({"error": str(e)}), 500
     except chess.engine.EngineError as e:
@@ -258,19 +262,20 @@ def api_bot_move():
     diff_key = normalize_difficulty(difficulty if isinstance(difficulty, str) else "medium")
 
     result: Any = None
-    try:
-        engine = get_engine()
-        limit = apply_bot_level(engine, diff_key)
-        result = engine.play(board, limit)
-    except FileNotFoundError as e:
-        return jsonify({"error": str(e)}), 500
-    except chess.engine.EngineError as e:
-        return jsonify({"error": f"Engine error: {e}"}), 500
-    finally:
+    with _ENGINE_LOCK:
         try:
-            reset_engine_strength(get_engine())
-        except (FileNotFoundError, chess.engine.EngineError):
-            pass
+            engine = get_engine()
+            limit = apply_bot_level(engine, diff_key)
+            result = engine.play(board, limit)
+        except FileNotFoundError as e:
+            return jsonify({"error": str(e)}), 500
+        except chess.engine.EngineError as e:
+            return jsonify({"error": f"Engine error: {e}"}), 500
+        finally:
+            try:
+                reset_engine_strength(get_engine())
+            except (FileNotFoundError, chess.engine.EngineError):
+                pass
 
     if result is None or result.move is None:
         return jsonify({"error": "Engine returned no move"}), 500
@@ -312,95 +317,96 @@ def api_analyze_move():
         return jsonify({"error": "Could not infer played_uci; pass played_uci from client"}), 400
 
     try:
-        engine = get_engine()
-        eb = eval_white_cp(board_before, engine)
-        ea, mate_after_pov = eval_white_cp_and_mover_mate_pov(board_after, engine, mover)
-        top_uci = multipv_root_uci(board_before, engine, MULTIPV_LINES)
+        with _ENGINE_LOCK:
+            engine = get_engine()
+            eb = eval_white_cp(board_before, engine)
+            ea, mate_after_pov = eval_white_cp_and_mover_mate_pov(board_after, engine, mover)
+            top_uci = multipv_root_uci(board_before, engine, MULTIPV_LINES)
+
+            best_uci = top_uci[0] if top_uci else None
+            if not best_uci:
+                return jsonify({"error": "Engine returned no principal variation"}), 500
+
+            # Second MultiPV eval at root (for BRILLIANT-style heuristic) — eye-on-chess useClientAnalysis
+            next_best_white = next_best_eval_white_from_multipv(
+                board_before, engine, ENGINE_DEPTH
+            )
+
+            classification, cp_loss_eye, eye_dbg = classify_move_eye_on_chess(
+                fen_before,
+                played_uci,
+                int(eb["eval_cp"]),
+                int(ea["eval_cp"]),
+                best_uci,
+                next_best_white,
+            )
+
+            phase_before = detect_game_phase(board_before)
+
+            polyglot_book_move = (
+                phase_before == "opening" and is_book_move(board_before, played_uci)
+            )
+
+            if board_after.is_checkmate():
+                classification = "checkmate"
+            elif polyglot_book_move:
+                classification = "book"
+
+            # Debug: centipawn loss vs *best continuation* (child positions), not used for labels
+            try:
+                cp_vs_best, w_after_best, w_after_played = cp_loss_vs_best_continuation(
+                    board_before, board_after, best_uci, mover, engine
+                )
+            except chess.IllegalMoveError:
+                cp_vs_best, w_after_best, w_after_played = None, None, None
+
+            root_delta_cp = mover_delta_cp(eb["eval_cp"], ea["eval_cp"], mover)
+
+            phase_info = detect_game_phase_debug(board_after)
+
+            is_checkmate_on_board = board_after.is_checkmate()
+
+            return jsonify(
+                {
+                    "fen_before": fen_before,
+                    "fen_after": fen_after,
+                    "mover": mover,
+                    "played_uci": played_uci,
+                    "best_uci": best_uci,
+                    "top_moves_uci": top_uci,
+                    "eval_before_cp": eb["eval_cp"],
+                    "eval_after_cp": ea["eval_cp"],
+                    "eval_best_child_cp": w_after_best,
+                    "eval_played_child_cp": w_after_played,
+                    "cp_loss_eye_on_chess": round(cp_loss_eye, 2),
+                    "cp_loss_vs_best": round(cp_vs_best, 2) if cp_vs_best is not None else None,
+                    "next_best_eval_white": next_best_white,
+                    "classifier": "eye-on-chess (amiwrpremium/eye-on-chess classify.ts)",
+                    "classifier_debug": eye_dbg,
+                    "delta_cp": root_delta_cp,
+                    "classification": classification,
+                    "phase_before_move": phase_before,
+                    "is_book_move": polyglot_book_move,
+                    "opening_book_path": OPENING_BOOK_PATH,
+                    "book_debug": {
+                        "opening_book_path": OPENING_BOOK_PATH,
+                        "opening_book_path_exists": os.path.isfile(OPENING_BOOK_PATH),
+                    },
+                    "game_phase": phase_info["phase"],
+                    "game_phase_detail": phase_info,
+                    "mate_before": eb["mate"],
+                    "mate_after": ea["mate"],
+                    "is_checkmate_on_board": is_checkmate_on_board,
+                    "is_mate_sequence": mate_after_pov["is_mate_sequence"],
+                    "mate_in": mate_after_pov["mate_in"],
+                    "mate_for_mover": mate_after_pov["mate_for_mover"],
+                    "mate_score_pov_debug": mate_after_pov.get("mate_score_pov_repr"),
+                }
+            )
     except FileNotFoundError as e:
         return jsonify({"error": str(e)}), 500
     except chess.engine.EngineError as e:
         return jsonify({"error": f"Engine error: {e}"}), 500
-
-    best_uci = top_uci[0] if top_uci else None
-    if not best_uci:
-        return jsonify({"error": "Engine returned no principal variation"}), 500
-
-    # Second MultiPV eval at root (for BRILLIANT-style heuristic) — eye-on-chess useClientAnalysis
-    next_best_white = next_best_eval_white_from_multipv(
-        board_before, engine, ENGINE_DEPTH
-    )
-
-    classification, cp_loss_eye, eye_dbg = classify_move_eye_on_chess(
-        fen_before,
-        played_uci,
-        int(eb["eval_cp"]),
-        int(ea["eval_cp"]),
-        best_uci,
-        next_best_white,
-    )
-
-    phase_before = detect_game_phase(board_before)
-
-    polyglot_book_move = (
-        phase_before == "opening" and is_book_move(board_before, played_uci)
-    )
-
-    if board_after.is_checkmate():
-        classification = "checkmate"
-    elif polyglot_book_move:
-        classification = "book"
-
-    # Debug: centipawn loss vs *best continuation* (child positions), not used for labels
-    try:
-        cp_vs_best, w_after_best, w_after_played = cp_loss_vs_best_continuation(
-            board_before, board_after, best_uci, mover, engine
-        )
-    except chess.IllegalMoveError:
-        cp_vs_best, w_after_best, w_after_played = None, None, None
-
-    root_delta_cp = mover_delta_cp(eb["eval_cp"], ea["eval_cp"], mover)
-
-    phase_info = detect_game_phase_debug(board_after)
-
-    is_checkmate_on_board = board_after.is_checkmate()
-
-    return jsonify(
-        {
-            "fen_before": fen_before,
-            "fen_after": fen_after,
-            "mover": mover,
-            "played_uci": played_uci,
-            "best_uci": best_uci,
-            "top_moves_uci": top_uci,
-            "eval_before_cp": eb["eval_cp"],
-            "eval_after_cp": ea["eval_cp"],
-            "eval_best_child_cp": w_after_best,
-            "eval_played_child_cp": w_after_played,
-            "cp_loss_eye_on_chess": round(cp_loss_eye, 2),
-            "cp_loss_vs_best": round(cp_vs_best, 2) if cp_vs_best is not None else None,
-            "next_best_eval_white": next_best_white,
-            "classifier": "eye-on-chess (amiwrpremium/eye-on-chess classify.ts)",
-            "classifier_debug": eye_dbg,
-            "delta_cp": root_delta_cp,
-            "classification": classification,
-            "phase_before_move": phase_before,
-            "is_book_move": polyglot_book_move,
-            "opening_book_path": OPENING_BOOK_PATH,
-            "book_debug": {
-                "opening_book_path": OPENING_BOOK_PATH,
-                "opening_book_path_exists": os.path.isfile(OPENING_BOOK_PATH),
-            },
-            "game_phase": phase_info["phase"],
-            "game_phase_detail": phase_info,
-            "mate_before": eb["mate"],
-            "mate_after": ea["mate"],
-            "is_checkmate_on_board": is_checkmate_on_board,
-            "is_mate_sequence": mate_after_pov["is_mate_sequence"],
-            "mate_in": mate_after_pov["mate_in"],
-            "mate_for_mover": mate_after_pov["mate_for_mover"],
-            "mate_score_pov_debug": mate_after_pov.get("mate_score_pov_repr"),
-        }
-    )
 
 
 if __name__ == "__main__":
