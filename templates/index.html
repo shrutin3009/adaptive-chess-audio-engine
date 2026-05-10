@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Adaptive Chess Audio Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      background: #000;
+      color: #f2f2f2;
+      line-height: 1.55;
+    }
+    .page {
+      max-width: 44rem;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .hero {
+      width: 100%;
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 {
+      margin: 0 0 1.35rem;
+      font-family: "Cormorant Garamond", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+      font-size: clamp(2rem, 6vw, 3.15rem);
+      font-weight: 600;
+      font-style: italic;
+      letter-spacing: 0.06em;
+      line-height: 1.15;
+      color: #faf8f5;
+      text-shadow: 0 0 42px rgba(255, 250, 240, 0.12);
+    }
+    .intro {
+      text-align: center;
+      font-size: 0.95rem;
+      color: rgba(242, 242, 242, 0.88);
+      max-width: 40rem;
+      margin: 2rem auto 0;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .intro p {
+      margin: 0 0 1rem;
+    }
+    .intro p:last-child {
+      margin-bottom: 0;
+    }
+    .game-area {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #play-controls {
+      margin-bottom: 0.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem 0.75rem;
+    }
+    #play-controls label {
+      display: inline-block;
+      margin-right: 0.75rem;
+      margin-top: 0.35rem;
+      color: rgba(242, 242, 242, 0.92);
+    }
+    #play-controls select {
+      margin-left: 0.35rem;
+      max-width: 100%;
+      background: #1a1a1a;
+      color: #f2f2f2;
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 0.25rem 0.4rem;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 0.65rem;
+    }
+    button {
+      margin: 0;
+      background: #1e1e1e;
+      color: #f2f2f2;
+      border: 1px solid #555;
+      border-radius: 6px;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2a2a2a;
+      border-color: #777;
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .sound-hint {
+      font-size: 0.85rem;
+      color: rgba(242, 242, 242, 0.65);
+      margin: 0.75rem 0 0.35rem;
+      display: none;
+      max-width: 28rem;
+    }
+    .sound-hint strong { color: #fff; }
+    #board-wrap {
+      margin: 1.25rem 0 1rem;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+    #board {
+      width: min(92vw, 420px);
+    }
+    #status {
+      margin: 0.75rem 0 0;
+      font-size: 0.95rem;
+      color: rgba(242, 242, 242, 0.9);
+      min-height: 1.5em;
+    }
+    /* Black (bot) last move — chessboard.js marks squares with data-square */
+    #board .square-last-bot {
+      box-shadow: inset 0 0 0 2px rgba(245, 242, 255, 0.92);
+      background-color: rgba(230, 225, 255, 0.62) !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Adaptive Chess Audio Engine</h1>
+    </header>
+
+    <main class="game-area">
+      <div id="play-controls">
+        <label>Difficulty
+          <select id="select-bot-difficulty">
+            <option value="easy">easy</option>
+            <option value="medium" selected>medium</option>
+            <option value="hard">hard</option>
+          </select>
+        </label>
+        <label>Play as
+          <select id="select-human-color">
+            <option value="w" selected>White</option>
+            <option value="b">Black</option>
+          </select>
+        </label>
+        <div class="btn-row">
+          <button type="button" id="btn-start-game">Start</button>
+          <button type="button" id="btn-resign">Resign</button>
+        </div>
+      </div>
+      <p id="sound-hint" class="sound-hint"><strong>Tip:</strong> Click <strong>Start</strong> or move a piece once</p>
+      <div id="board-wrap">
+        <div id="board"></div>
+      </div>
+      <p id="status"></p>
+      <div class="intro">
+        <p>Adaptive Chess Audio Engine is an interactive audio and sound design project that transforms chess into a reactive musical experience. Using Python, JavaScript, Flask, SuperCollider, and GarageBand, the system analyzes chess moves in real time and dynamically changes music, ambience, and sound effects based on move quality and game intensity.</p>
+        <p>The project features multiple musical difficulty modes with distinct atmospheres. Easy mode uses relaxed drum-based ambience and soft harmonic textures, medium mode focuses on ethereal and ambient soundscapes, and hard mode uses cinematic orchestral instrumentation inspired by film and game music. Strong moves trigger more beautiful and triumphant musical material, while mistakes and blunders introduce darker, more dissonant, and unsettling sounds.</p>
+        <p>The project explores the relationship between music, emotion, mathematics, and strategic thinking. Chess already creates emotional tension through decision making, and this system attempts to make those emotions audible through adaptive sound design. Because chess contains more possible move combinations than atoms in the observable universe, the project can generate an effectively limitless number of evolving musical experiences shaped entirely by gameplay.</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.min.js"></script>
+  <script src="{{ url_for('static', filename='app.js') }}?v=85"></script>
+</body>
+</html>
