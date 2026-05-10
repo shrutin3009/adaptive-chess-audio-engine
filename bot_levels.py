@@ -12,34 +12,34 @@ ENGINE_FULL_STRENGTH_UCI: dict[str, bool | int] = {
     "Skill Level": 20,
 }
 
-# Many Stockfish builds enforce UCI_Elo >= 1320 when UCI_LimitStrength is on.
+# UCI_Elo with UCI_LimitStrength: supported range depends on Stockfish build (some old builds floor ~1320).
 BOT_LEVELS: dict[str, dict[str, object]] = {
     "easy": {
         "label": "Easy",
         "uci_options": {
             "UCI_LimitStrength": True,
-            "UCI_Elo": 1320,
-            "Skill Level": 4,
+            "UCI_Elo": 500,
+            "Skill Level": 0,
         },
-        "limit": chess.engine.Limit(depth=6, time=0.08),
+        "limit": chess.engine.Limit(depth=3, time=0.04),
     },
     "medium": {
         "label": "Medium",
         "uci_options": {
             "UCI_LimitStrength": True,
-            "UCI_Elo": 1700,
-            "Skill Level": 10,
+            "UCI_Elo": 1200,
+            "Skill Level": 5,
         },
-        "limit": chess.engine.Limit(depth=10, time=0.15),
+        "limit": chess.engine.Limit(depth=6, time=0.09),
     },
     "hard": {
         "label": "Hard",
         "uci_options": {
             "UCI_LimitStrength": True,
-            "UCI_Elo": 2500,
-            "Skill Level": 18,
+            "UCI_Elo": 1800,
+            "Skill Level": 12,
         },
-        "limit": chess.engine.Limit(depth=18, time=0.4),
+        "limit": chess.engine.Limit(depth=12, time=0.22),
     },
 }
 

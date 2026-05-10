@@ -18,6 +18,12 @@
 
   /** Mix: SFX only modestly above ambience so the bed stays present (masters are pre-limited). */
   const MIX_AMBIENCE = 0.22;
+  /** Easy mode: louder ambience bed and sine move stings (no move WAVs). */
+  const MIX_EASY_AMBIENCE_MUL = 1.5;
+  const MIX_EASY_SYNTH_MUL = 1.75;
+  /** Hard pack masters read hot — scale SFX + bed vs Medium. */
+  const MIX_HARD_PACK_MUL = 0.72;
+  const MIX_HARD_AMBIENCE_MUL = 0.78;
   const MIX_SFX_MOVE = 0.32;
   /** Move-sting tweaks vs MIX_SFX_MOVE. */
   const MIX_SFX_EXCELLENT = 0.66;
@@ -126,6 +132,31 @@
     return (botDifficulty || 'medium').toLowerCase() === 'easy';
   }
 
+  function isHardMode() {
+    return (botDifficulty || 'medium').toLowerCase() === 'hard';
+  }
+
+  function targetAmbienceVolume() {
+    if (isEasyMode()) {
+      return Math.min(0.95, MIX_AMBIENCE * MIX_EASY_AMBIENCE_MUL);
+    }
+    if (isHardMode()) {
+      return MIX_AMBIENCE * MIX_HARD_AMBIENCE_MUL;
+    }
+    return MIX_AMBIENCE;
+  }
+
+  /** Test-loop volume: Easy/Hard preview URLs vs default bed. */
+  function ambienceBedPeakForTestUrl(url) {
+    if (isEasyMode() && url && url.indexOf('/Easy/') !== -1) {
+      return targetAmbienceVolume();
+    }
+    if (url && url.indexOf('/Hard/') !== -1) {
+      return MIX_AMBIENCE * MIX_HARD_AMBIENCE_MUL;
+    }
+    return MIX_AMBIENCE;
+  }
+
   function moveSoundUrlInPack(classification, packFolder) {
     var fname =
       packFolder === 'Hard' && HARD_MOVE_FILENAME_OVERRIDES[classification]
@@ -185,12 +216,16 @@
     return audioCtx;
   }
 
-  function playTone(ctx, freq, durationSec) {
+  /**
+   * @param {number} [peakMul] gain vs default sine peak (1 = default).
+   */
+  function playTone(ctx, freq, durationSec, peakMul) {
     if (!ctx) return;
+    var m = peakMul != null ? peakMul : 1;
     const t0 = ctx.currentTime;
     const atk = 0.02;
     const rel = 0.025;
-    const peak = 0.34 * MIX_SFX_MOVE;
+    const peak = Math.min(0.98, 0.34 * MIX_SFX_MOVE * m);
     const dur = Math.max(durationSec, atk + rel + 0.03);
     const tEnd = t0 + dur;
     const osc = ctx.createOscillator();
@@ -305,12 +340,13 @@
           }
           return;
         }
+        var bedPeak = ambienceBedPeakForTestUrl(url);
         var u = Math.min(1, (performance.now() - t0) / AMBIENCE_FADE_IN_MS);
-        a.volume = MIX_AMBIENCE * u;
+        a.volume = bedPeak * u;
         if (u >= 1) {
           clearInterval(testAmbienceRampId);
           testAmbienceRampId = null;
-          a.volume = MIX_AMBIENCE;
+          a.volume = bedPeak;
         }
       }, 16);
     }
@@ -348,18 +384,19 @@
         var pathMw = moveSoundUrlInPack('checkmate', 'Hard');
         var profMw = SOUND_PROFILE.checkmate;
         if (!pathMw) {
-          triggerSynthFallback(profMw);
+          triggerSynthFallback(profMw, true);
           return;
         }
+        var pkMw = peakForMoveClassification('checkmate', 'Hard');
         playSfxUrl(
           pathMw,
-          MIX_SFX_CHECKMATE_WIN,
+          pkMw,
           function () {
             playSfxUrl(
               '/static/sounds/checkmate.wav',
-              MIX_SFX_CHECKMATE_WIN,
+              pkMw,
               function () {
-                triggerSynthFallback(profMw);
+                triggerSynthFallback(profMw, true);
               },
               null,
               { fadeInMs: 0 }
@@ -384,7 +421,7 @@
       var path = moveSoundUrlInPack(kind, 'Hard');
       var profile = SOUND_PROFILE[kind] || SOUND_PROFILE.good;
       if (!path) {
-        triggerSynthFallback(profile);
+        triggerSynthFallback(profile, true);
         return;
       }
       var peak = peakForMoveClassification(kind, 'Hard');
@@ -392,7 +429,7 @@
         path,
         peak,
         function () {
-          triggerSynthFallback(profile);
+          triggerSynthFallback(profile, true);
         }
       );
     });
@@ -454,7 +491,13 @@
     ambienceAudio = a;
     var p = a.play();
     function rampUp() {
-      startAmbienceVolumeRamp(a, 0, MIX_AMBIENCE, AMBIENCE_FADE_IN_MS, null);
+      startAmbienceVolumeRamp(
+        a,
+        0,
+        targetAmbienceVolume(),
+        AMBIENCE_FADE_IN_MS,
+        null
+      );
     }
     if (p && typeof p.then === 'function') {
       p.then(rampUp).catch(function (err) {
@@ -478,7 +521,7 @@
     }
     var startVol = el.volume;
     if (typeof startVol !== 'number' || startVol !== startVol) {
-      startVol = MIX_AMBIENCE;
+      startVol = targetAmbienceVolume();
     }
     var t0 = performance.now();
     var stepMs = 40;
@@ -605,11 +648,15 @@
       });
       return;
     }
+    var lossPeak = MIX_SFX_MATE_LOSS;
+    if (url && url.indexOf('/Hard/') !== -1) {
+      lossPeak = Math.min(0.98, lossPeak * MIX_HARD_PACK_MUL);
+    }
     playSfxUrl(
       url,
-      MIX_SFX_MATE_LOSS,
+      lossPeak,
       function () {
-        triggerSynthFallback(profile);
+        triggerSynthFallback(profile, true);
       },
       null,
       { fadeInMs: 0 }
@@ -617,7 +664,11 @@
   }
 
   function playResignMp3() {
-    playSfxUrl('/static/sounds/resign.mp3', MIX_SFX_DRAMATIC, null);
+    var dr = MIX_SFX_DRAMATIC;
+    if (isHardMode()) {
+      dr = Math.min(0.98, dr * MIX_HARD_PACK_MUL);
+    }
+    playSfxUrl('/static/sounds/resign.mp3', dr, null);
   }
 
   /** Easy mode: short descending sine pair (no MP3). */
@@ -625,9 +676,9 @@
     var ctx = ensureContext();
     if (!ctx) return;
     function run() {
-      playTone(ctx, 233, 0.14);
+      playTone(ctx, 233, 0.14, MIX_EASY_SYNTH_MUL);
       window.setTimeout(function () {
-        playTone(ctx, 175, 0.22);
+        playTone(ctx, 175, 0.22, MIX_EASY_SYNTH_MUL);
       }, 100);
     }
     if (ctx.state === 'running') run();
@@ -646,22 +697,25 @@
 
   function peakForMoveClassification(classification, packFolder) {
     var folder = packFolder != null ? packFolder : soundsPackFolder();
-    if (classification === 'checkmate') return MIX_SFX_CHECKMATE_WIN;
-    if (classification === 'best') return MIX_SFX_BEST;
-    if (classification === 'great') return MIX_SFX_GREAT;
-    if (classification === 'excellent') {
-      return folder === 'Hard' ? MIX_SFX_EXCELLENT_HARD : MIX_SFX_EXCELLENT;
+    var peak;
+    if (classification === 'checkmate') peak = MIX_SFX_CHECKMATE_WIN;
+    else if (classification === 'best') peak = MIX_SFX_BEST;
+    else if (classification === 'great') peak = MIX_SFX_GREAT;
+    else if (classification === 'excellent') {
+      peak = folder === 'Hard' ? MIX_SFX_EXCELLENT_HARD : MIX_SFX_EXCELLENT;
+    } else if (classification === 'good') {
+      peak = folder === 'Hard' ? MIX_SFX_GOOD_HARD : MIX_SFX_GOOD;
+    } else if (classification === 'book') peak = MIX_SFX_BOOK;
+    else if (classification === 'inaccuracy') peak = MIX_SFX_INACCURACY;
+    else if (classification === 'mistake') peak = MIX_SFX_MISTAKE;
+    else if (classification === 'blunder') {
+      peak = folder === 'Hard' ? MIX_SFX_BLUNDER_HARD : MIX_SFX_BLUNDER;
+    } else peak = MIX_SFX_MOVE;
+
+    if (folder === 'Hard') {
+      peak = Math.min(0.98, peak * MIX_HARD_PACK_MUL);
     }
-    if (classification === 'good') {
-      return folder === 'Hard' ? MIX_SFX_GOOD_HARD : MIX_SFX_GOOD;
-    }
-    if (classification === 'book') return MIX_SFX_BOOK;
-    if (classification === 'inaccuracy') return MIX_SFX_INACCURACY;
-    if (classification === 'mistake') return MIX_SFX_MISTAKE;
-    if (classification === 'blunder') {
-      return folder === 'Hard' ? MIX_SFX_BLUNDER_HARD : MIX_SFX_BLUNDER;
-    }
-    return MIX_SFX_MOVE;
+    return peak;
   }
 
   function triggerSoundForClassification(classification) {
@@ -685,13 +739,13 @@
             '/static/sounds/checkmate.wav',
             MIX_SFX_CHECKMATE_WIN,
             function () {
-              triggerSynthFallback(profile);
+              triggerSynthFallback(profile, true);
             },
             null,
             { fadeInMs: 0 }
           );
         } else {
-          triggerSynthFallback(profile);
+          triggerSynthFallback(profile, true);
         }
       },
       null,
@@ -699,11 +753,16 @@
     );
   }
 
-  function triggerSynthFallback(profile) {
+  /**
+   * @param {boolean} [fromFailedPack] if true, use normal synth level (WAV decode/play failed).
+   */
+  function triggerSynthFallback(profile, fromFailedPack) {
     var ctx = ensureContext();
     if (!ctx) return;
+    var mul =
+      fromFailedPack === true ? 1 : isEasyMode() ? MIX_EASY_SYNTH_MUL : 1;
     function fire() {
-      playTone(ctx, profile.hz, profile.dur);
+      playTone(ctx, profile.hz, profile.dur, mul);
     }
     if (ctx.state === 'running') {
       fire();
@@ -718,8 +777,9 @@
 
   function syncControlButtons() {
     if (btnStart) {
-      var showRestart =
-        gameStarted && isGameOver && lossReason === 'resign';
+      var finished =
+        isGameOver || game.game_over();
+      var showRestart = gameStarted && finished;
       btnStart.disabled = gameStarted && !showRestart;
       btnStart.textContent = showRestart ? 'Restart' : 'Start';
     }
@@ -1074,9 +1134,13 @@
         thenResignSting();
         return;
       }
+      var resignLossPeak = MIX_SFX_MATE_LOSS;
+      if (lossUrl.indexOf('/Hard/') !== -1) {
+        resignLossPeak = Math.min(0.98, resignLossPeak * MIX_HARD_PACK_MUL);
+      }
       playSfxUrl(
         lossUrl,
-        MIX_SFX_MATE_LOSS,
+        resignLossPeak,
         thenResignSting,
         thenResignSting,
         { fadeInMs: 0 }
@@ -1112,7 +1176,7 @@
     },
 
     onDrop: function (source, target) {
-      if (!gameStarted || isGameOver) return 'snapback';
+      if (!gameStarted || isGameOver || game.game_over()) return 'snapback';
 
       const fenBefore = game.fen();
       const move = game.move({
