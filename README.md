@@ -4,7 +4,7 @@ Human **vs computer** (Stockfish) in the browser. Choose **easy**, **medium**, o
 
 After each **human** move, the server classifies it. The **primary** labels come from an **Eye on Chess**–style classifier (`eye_on_chess_classify.py`): **centipawn loss** from the mover’s perspective using the root evaluation **before** vs **after** the move (both in **White’s point of view**, adjusted so “loss” means worse for whoever moved).
 
-**Audio (see `static/app.js`):**
+**Audio (see `static/js/audio.js`):**
 
 - **Easy** — Web Audio **sine** stings per label; **no** Medium/Hard move WAVs; **Easy** pack **`ambience.wav`** for the bed; resign uses a short synth gesture (no pack mate-loss / resign MP3).
 - **Medium / Hard** — WAVs under `static/audio/medium/` and `static/audio/hard/` in the repo (move stings, ambience, mate loss, etc.), plus shared static stings where used; mix constants differ (including Hard-only tweaks for some labels).
@@ -50,7 +50,7 @@ You may see exactly one of:
 
 `best`, `great`, `excellent`, `good`, `inaccuracy`, `mistake`, `blunder`, `book`, `checkmate`.
 
-Mapping to playback is in **`static/app.js`** (pack paths, `MIX_*` levels, synth fallback, easy vs medium/hard).
+Mapping to playback is in **`static/js/audio.js`** (pack paths, `MIX_*` levels, synth fallback, easy vs medium/hard).
 
 ---
 
