@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import os
+import shutil
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-STOCKFISH_PATH = os.environ.get(
-    "STOCKFISH_PATH",
-    "stockfish",
-)
+# Falls back to a `stockfish` binary on PATH (e.g. from `brew install stockfish`).
+STOCKFISH_PATH = os.environ.get("STOCKFISH_PATH") or shutil.which("stockfish") or "stockfish"
 OPENING_BOOK_PATH = os.environ.get("OPENING_BOOK_PATH", str(PROJECT_ROOT / "data" / "gm2001.bin"))
 
 # Search depth for move analysis (higher is slower and more accurate).

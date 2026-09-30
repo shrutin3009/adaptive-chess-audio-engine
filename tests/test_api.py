@@ -86,6 +86,14 @@ def test_evaluate_returns_white_pov_eval(client, fake_engine):
     assert response.get_json() == {"fen": START, "eval_cp": 0, "mate": False, "mate_in": None}
 
 
+def test_missing_binary_error_says_how_to_fix_it(client, monkeypatch):
+    monkeypatch.setattr(config, "STOCKFISH_PATH", "/nonexistent/stockfish")
+    monkeypatch.setattr(engine_module, "_engine", None)
+    response = client.post("/api/evaluate", json={"fen": START})
+    assert response.status_code == 500
+    assert "STOCKFISH_PATH" in response.get_json()["error"]
+
+
 def test_evaluate_reports_missing_engine_as_json_500(client, monkeypatch):
     monkeypatch.setattr(engine_module, "get_engine", raise_missing_binary)
     response = client.post("/api/evaluate", json={"fen": START})

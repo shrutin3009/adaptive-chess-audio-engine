@@ -23,8 +23,9 @@ def get_engine() -> chess.engine.SimpleEngine:
     if _engine is None:
         if not os.path.isfile(config.STOCKFISH_PATH):
             raise FileNotFoundError(
-                f"Stockfish not found at {config.STOCKFISH_PATH!r}. "
-                "Set the STOCKFISH_PATH environment variable."
+                f"Stockfish not found at {config.STOCKFISH_PATH!r}. Install it "
+                "(brew install stockfish, apt install stockfish, or https://stockfishchess.org/download/) "
+                "or set STOCKFISH_PATH to the binary."
             )
         _engine = chess.engine.SimpleEngine.popen_uci(config.STOCKFISH_PATH)
     return _engine

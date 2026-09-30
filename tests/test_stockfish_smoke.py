@@ -1,13 +1,15 @@
-"""End-to-end checks against a real Stockfish binary. Skipped unless STOCKFISH_PATH points to one."""
+"""End-to-end checks against a real Stockfish binary. Skipped when none is installed or configured."""
 
 import os
 
 import chess
 import pytest
 
+from chess_audio import config
+
 pytestmark = pytest.mark.skipif(
-    not os.path.isfile(os.environ.get("STOCKFISH_PATH", "")),
-    reason="set STOCKFISH_PATH to a Stockfish binary to run",
+    not os.path.isfile(config.STOCKFISH_PATH),
+    reason="install Stockfish or set STOCKFISH_PATH to run",
 )
 
 AFTER_E4 = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
