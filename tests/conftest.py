@@ -20,6 +20,7 @@ class FakeEngine:
     def __init__(self, scores: dict[str, int] | None = None) -> None:
         self.scores = scores or {}
         self.configured: list[dict] = []
+        self.analyse_calls = 0
         self.options = {
             "UCI_Elo": chess.engine.Option("UCI_Elo", "spin", 1320, 1320, 3190, []),
             "Skill Level": chess.engine.Option("Skill Level", "spin", 20, 0, 20, []),
@@ -42,6 +43,7 @@ class FakeEngine:
         return lines
 
     def analyse(self, board: chess.Board, limit, multipv: int | None = None):
+        self.analyse_calls += 1
         if board.is_checkmate():
             infos = [{"score": chess.engine.PovScore(chess.engine.Mate(0), board.turn), "pv": []}]
         else:

@@ -165,6 +165,12 @@ def test_analyze_move_second_line_eval(client, fake_engine):
     assert data["next_best_eval_white"] == 30
 
 
+def test_analyze_move_runs_four_engine_searches(client, fake_engine):
+    # Position before, position after, one MultiPV search, and the position after the best move.
+    client.post("/api/analyze-move", json={"fen_before": START, "fen_after": AFTER_E4, "played_uci": "e2e4"})
+    assert fake_engine.analyse_calls == 4
+
+
 def test_analyze_move_checkmate_overrides_label(client, fake_engine):
     data = client.post(
         "/api/analyze-move",

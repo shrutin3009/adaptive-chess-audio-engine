@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import threading
-from typing import Any, Optional
+from typing import Any, NamedTuple, Optional
 
 import chess
 import chess.engine
@@ -79,17 +79,20 @@ def evaluate_after_move(
     return evaluation, mate_info
 
 
-def top_moves(board: chess.Board, engine: chess.engine.SimpleEngine, lines: int) -> list[str]:
-    """First move of each MultiPV line, best first ("" for a line without a move)."""
-    infos = engine.analyse(board, _depth_limit(), multipv=max(1, lines))
+class PrincipalLine(NamedTuple):
+    uci: str  # first move of the line, "" if the engine gave none
+    white_cp: int
+
+
+def principal_lines(board: chess.Board, engine: chess.engine.SimpleEngine, count: int) -> list[PrincipalLine]:
+    """
+    The engine's best lines from one MultiPV search, best first. At least two lines are
+    requested because the classifier's sacrifice heuristic needs the second-best score.
+    """
+    infos = engine.analyse(board, _depth_limit(), multipv=max(2, count))
     if not isinstance(infos, list):
         infos = [infos]
-    return [info["pv"][0].uci() if info.get("pv") else "" for info in infos]
-
-
-def second_line_white_cp(board: chess.Board, engine: chess.engine.SimpleEngine) -> Optional[int]:
-    """White-POV score of the engine's second-best line, or None if there is no second line."""
-    infos = engine.analyse(board, _depth_limit(), multipv=2)
-    if not isinstance(infos, list) or len(infos) < 2:
-        return None
-    return white_centipawns(infos[1]["score"].white())
+    return [
+        PrincipalLine(info["pv"][0].uci() if info.get("pv") else "", white_centipawns(info["score"].white()))
+        for info in infos
+    ]
