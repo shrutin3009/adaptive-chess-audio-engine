@@ -68,8 +68,6 @@
   let gameStarted = false;
 
   let isGameOver = false;
-  /** @type {null | 'white' | 'black'} */
-  let winner = null;
   /** @type {null | 'resign'} */
   let lossReason = null;
 
@@ -79,13 +77,7 @@
   /** Bot’s last move `{ from, to }` for board highlight (algebraic). */
   let lastBotMoveSquares = null;
 
-  /** Separate from game ambience — sidebar “test ambience” loop. */
-  let testAmbienceAudio = null;
-  let testAmbienceRampId = null;
-
-  const logEl = document.getElementById('log');
   const statusEl = document.getElementById('status');
-  const fenOut = document.getElementById('fen-out');
   const soundHint = document.getElementById('sound-hint');
   const selectBotDifficulty = document.getElementById('select-bot-difficulty');
   const selectHumanColor = document.getElementById('select-human-color');
@@ -106,19 +98,6 @@
     great: 'great.wav',
     inaccuracy: 'inaccuracy.wav',
     mistake: 'mistake.wav',
-  };
-
-  /** When difficulty is ``hard``, these classifications load from ``static/audio/hard/``. */
-  const HARD_PACK_CLASSIFICATIONS = {
-    best: true,
-    blunder: true,
-    book: true,
-    checkmate: true,
-    excellent: true,
-    good: true,
-    great: true,
-    inaccuracy: true,
-    mistake: true,
   };
 
   function soundsPackFolder() {
@@ -154,23 +133,9 @@
     return MIX_AMBIENCE;
   }
 
-  /** Test-loop volume: Easy/Hard preview URLs vs default bed. */
-  function ambienceBedPeakForTestUrl(url) {
-    if (isEasyMode() && url && url.indexOf('/easy/') !== -1) {
-      return targetAmbienceVolume();
-    }
-    if (url && url.indexOf('/hard/') !== -1) {
-      return MIX_AMBIENCE * MIX_HARD_AMBIENCE_MUL;
-    }
-    return MIX_AMBIENCE;
-  }
-
   function moveSoundUrlInPack(classification, packFolder) {
     var fname = MOVE_SOUND_FILENAMES[classification];
     if (!fname) return null;
-    if (packFolder === 'Hard' && !HARD_PACK_CLASSIFICATIONS[classification]) {
-      return null;
-    }
     return packSoundUrl('/static/audio/' + packFolder.toLowerCase() + '/' + fname);
   }
 
@@ -265,7 +230,6 @@
         run();
       }).catch(function (e) {
         console.error(e);
-        if (logEl) logEl.textContent = 'Audio blocked: ' + (e && e.message ? e.message : e);
       });
     } else {
       run();
@@ -307,166 +271,6 @@
         if (typeof onDone === 'function') onDone();
       }
     }, 16);
-  }
-
-  function stopTestAmbience() {
-    if (testAmbienceRampId !== null) {
-      clearInterval(testAmbienceRampId);
-      testAmbienceRampId = null;
-    }
-    if (testAmbienceAudio) {
-      try {
-        testAmbienceAudio.pause();
-        testAmbienceAudio.removeAttribute('src');
-        testAmbienceAudio.load();
-      } catch (e) {}
-      testAmbienceAudio = null;
-    }
-  }
-
-  function startTestAmbienceFromUrl(url) {
-    stopTestAmbience();
-    var a = new Audio(url);
-    a.loop = true;
-    a.volume = 0;
-    testAmbienceAudio = a;
-    var p = a.play();
-    function ramp() {
-      var t0 = performance.now();
-      testAmbienceRampId = setInterval(function () {
-        if (testAmbienceAudio !== a) {
-          if (testAmbienceRampId !== null) {
-            clearInterval(testAmbienceRampId);
-            testAmbienceRampId = null;
-          }
-          return;
-        }
-        var bedPeak = ambienceBedPeakForTestUrl(url);
-        var u = Math.min(1, (performance.now() - t0) / AMBIENCE_FADE_IN_MS);
-        a.volume = bedPeak * u;
-        if (u >= 1) {
-          clearInterval(testAmbienceRampId);
-          testAmbienceRampId = null;
-          a.volume = bedPeak;
-        }
-      }, 16);
-    }
-    if (p && typeof p.then === 'function') {
-      p.then(ramp).catch(function () {});
-    } else {
-      ramp();
-    }
-  }
-
-  function startTestAmbience() {
-    var url = ambienceUrl();
-    if (!url) return;
-    startTestAmbienceFromUrl(url);
-  }
-
-  function wireHardPackPreviewPanel() {
-    var panel = document.getElementById('hard-audio-test-panel');
-    if (!panel) return;
-    panel.addEventListener('click', function (e) {
-      var btn = e.target.closest('[data-hard-audio-test]');
-      if (!btn || !panel.contains(btn)) return;
-      var kind = btn.getAttribute('data-hard-audio-test');
-      if (!kind) return;
-      withRunningAudio(function () {});
-      if (kind === 'ambience-start') {
-        startTestAmbienceFromUrl(packSoundUrl('/static/audio/hard/ambience.wav'));
-        return;
-      }
-      if (kind === 'ambience-stop') {
-        stopTestAmbience();
-        return;
-      }
-      if (kind === 'mate-win') {
-        var pathMw = moveSoundUrlInPack('checkmate', 'Hard');
-        var profMw = SOUND_PROFILE.checkmate;
-        if (!pathMw) {
-          triggerSynthFallback(profMw, true);
-          return;
-        }
-        var pkMw = peakForMoveClassification('checkmate', 'Hard');
-        playSfxUrl(
-          pathMw,
-          pkMw,
-          function () {
-            playSfxUrl(
-              '/static/audio/shared/checkmate.wav',
-              pkMw,
-              function () {
-                triggerSynthFallback(profMw, true);
-              },
-              null,
-              { fadeInMs: 0 }
-            );
-          },
-          null,
-          { fadeInMs: 0 }
-        );
-        return;
-      }
-      if (kind === 'mate-loss') {
-        playUrlThenSynthFallback(
-          mateLossUrlForPack('Hard'),
-          SOUND_PROFILE.checkmate
-        );
-        return;
-      }
-      if (kind === 'resign') {
-        playResignCue();
-        return;
-      }
-      var path = moveSoundUrlInPack(kind, 'Hard');
-      var profile = SOUND_PROFILE[kind] || SOUND_PROFILE.good;
-      if (!path) {
-        triggerSynthFallback(profile, true);
-        return;
-      }
-      var peak = peakForMoveClassification(kind, 'Hard');
-      playSfxUrl(
-        path,
-        peak,
-        function () {
-          triggerSynthFallback(profile, true);
-        }
-      );
-    });
-  }
-
-  function wireAudioTestPanel() {
-    var panel = document.getElementById('audio-test-panel');
-    if (!panel) return;
-    panel.addEventListener('click', function (e) {
-      var btn = e.target.closest('[data-audio-test]');
-      if (!btn || !panel.contains(btn)) return;
-      var kind = btn.getAttribute('data-audio-test');
-      if (!kind) return;
-      withRunningAudio(function () {});
-      if (kind === 'ambience-start') {
-        startTestAmbience();
-        return;
-      }
-      if (kind === 'ambience-stop') {
-        stopTestAmbience();
-        return;
-      }
-      if (kind === 'mate-win') {
-        triggerSoundForClassification('checkmate');
-        return;
-      }
-      if (kind === 'mate-loss') {
-        playUrlThenSynthFallback(mateLossSoundUrl(), SOUND_PROFILE.checkmate);
-        return;
-      }
-      if (kind === 'resign') {
-        playResignCue();
-        return;
-      }
-      triggerSoundForClassification(kind);
-    });
   }
 
   function preloadDramaticStings() {
@@ -775,10 +579,6 @@
     ctx.resume().then(fire).catch(function () {});
   }
 
-  function setLog(text) {
-    if (logEl) logEl.textContent = text;
-  }
-
   function clearBotError() {
     botErrorMessage = '';
   }
@@ -830,7 +630,6 @@
       status = botErrorMessage + (status ? ' — ' + status : '');
     }
     if (statusEl) statusEl.textContent = status;
-    if (fenOut) fenOut.textContent = game.fen();
     syncControlButtons();
   }
 
@@ -911,7 +710,6 @@
   }
 
   function analyzeMove(fenBefore, fenAfter, playedUci, onDone) {
-    setLog('Analyzing…');
     fetch('/api/analyze-move', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -928,52 +726,10 @@
       })
       .then(function (result) {
         if (!result.ok) {
-          setLog('Error: ' + (result.data.error || result.data.message || JSON.stringify(result.data)));
           if (typeof onDone === 'function') onDone();
           return;
         }
         const d = result.data;
-        const lines = [
-          'Classification: ' + d.classification,
-          'Played UCI: ' + (d.played_uci || playedUci),
-          'Engine best: ' + (d.best_uci || '?'),
-          'Top moves: ' + (d.top_moves_uci || []).join(', '),
-          'Mover: ' + (d.mover === 'w' ? 'White' : 'Black'),
-          'Phase (after move): ' + (d.game_phase || '?'),
-          'Phase (before move): ' + (d.phase_before_move || '?'),
-          'Polyglot book move: ' + (d.is_book_move ? 'yes' : 'no'),
-          d.book_debug
-            ? 'Book path: ' +
-                (d.book_debug.opening_book_path || '—') +
-                ' | exists: ' +
-                d.book_debug.opening_book_path_exists
-            : '',
-          '',
-          (d.classifier || 'Classifier') +
-            '\ncp_loss (Eye on Chess): ' +
-            (d.cp_loss_eye_on_chess != null ? d.cp_loss_eye_on_chess : '?') +
-            '  |  vs-best-child (debug): ' +
-            (d.cp_loss_vs_best != null ? d.cp_loss_vs_best : '—'),
-          'next_best_eval_white: ' + (d.next_best_eval_white != null ? d.next_best_eval_white : '—'),
-          '',
-          'Root eval before/after (misleading — side to move flips): ' +
-            d.eval_before_cp +
-            ' → ' +
-            d.eval_after_cp +
-            ' (delta ' +
-            d.delta_cp +
-            ')',
-          '',
-          'Checkmate on board: ' + (d.is_checkmate_on_board ? 'yes' : 'no'),
-          'Stockfish mate (mover POV): is_mate_sequence=' +
-            d.is_mate_sequence +
-            ' mate_in=' +
-            (d.mate_in != null ? d.mate_in : '—') +
-            ' mate_for_mover=' +
-            d.mate_for_mover,
-        ];
-        setLog(lines.join('\n'));
-        console.log('analyze-move', d);
         // Bot just moved and mated human → loss sting.
         var bc = botColor();
         if (
@@ -996,7 +752,6 @@
         updateStatus();
       })
       .catch(function (err) {
-        setLog('Request failed: ' + err);
         console.error(err);
         if (typeof onDone === 'function') onDone();
       });
@@ -1064,7 +819,6 @@
         if (!result.ok) {
           var errText =
             'Bot error: ' + (result.data.error || JSON.stringify(result.data));
-          setLog(errText);
           setBotError(errText);
           isBotThinking = false;
           updateStatus();
@@ -1075,7 +829,6 @@
         var fenBefore = game.fen();
         var moved = applyUciMove(d.uci);
         if (!moved) {
-          setLog('Bot returned illegal move: ' + d.uci);
           isBotThinking = false;
           updateStatus();
           return;
@@ -1092,7 +845,6 @@
       })
       .catch(function (err) {
         var errText = 'Bot request failed: ' + err;
-        setLog(errText);
         setBotError(errText);
         console.error(err);
         isBotThinking = false;
@@ -1103,11 +855,9 @@
   function startGame() {
     readControlsFromDom();
     clearBotDelayTimer();
-    stopTestAmbience();
     clearBotError();
 
     isGameOver = false;
-    winner = null;
     lossReason = null;
     isBotThinking = false;
     checkmateLossCueDone = false;
@@ -1122,7 +872,6 @@
     preloadDramaticStings();
     startAmbience();
 
-    setLog('(no move yet)');
     updateStatus();
     maybeBotReplyAfterHuman();
   }
@@ -1133,16 +882,10 @@
     clearBotDelayTimer();
 
     isGameOver = true;
-    winner = humanColor === 'w' ? 'black' : 'white';
     lossReason = 'resign';
     isBotThinking = false;
 
     updateStatus();
-    setLog(
-      'Game ended by resignation. ' +
-        (humanColor === 'w' ? 'Black' : 'White') +
-        ' wins.'
-    );
     syncControlButtons();
 
     fadeOutAmbienceThen(AMBIENCE_FADE_BEFORE_DRAMATIC_MS, function () {
@@ -1268,7 +1011,4 @@
   }
 
   if (soundHint) soundHint.style.display = 'block';
-
-  wireAudioTestPanel();
-  wireHardPackPreviewPanel();
 })();
