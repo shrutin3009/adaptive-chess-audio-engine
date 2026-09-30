@@ -61,7 +61,7 @@ def test_index_renders(client):
 
 
 def test_pack_sound_is_served(client):
-    response = client.get("/Sounds/Medium/best.wav")
+    response = client.get("/static/audio/medium/best.wav")
     assert response.status_code == 200
     assert response.data[:4] == b"RIFF"
 

@@ -26,7 +26,7 @@
   const MIX_HARD_AMBIENCE_MUL = 0.78;
   /** Checkmate-loss WAV (and resign lead-in) in Hard — extra duck below other Hard SFX. */
   const MIX_HARD_MATE_LOSS_EXTRA_MUL = 0.66;
-  /** Bump when replacing files under ``Sounds/`` — browsers cache pack WAV URLs aggressively without this. */
+  /** Bump when replacing files under ``static/audio/`` — browsers cache pack WAV URLs aggressively without this. */
   const PACK_SOUNDS_CACHE_VER = '109a1f9b';
   const MIX_SFX_MOVE = 0.32;
   /** Move-sting tweaks vs MIX_SFX_MOVE. */
@@ -46,9 +46,9 @@
   /** Opening-book hits were barely audible at base move level. */
   const MIX_SFX_BOOK = 0.56;
   const MIX_SFX_DRAMATIC = 0.38;
-  /** Win sting: pack ``checkmate_win.wav`` + ``/static/sounds/checkmate.wav`` — big moment. */
+  /** Win sting: pack ``checkmate_win.wav`` + ``/static/audio/shared/checkmate.wav`` — big moment. */
   const MIX_SFX_CHECKMATE_WIN = 0.82;
-  /** Louder than other dramatic stings — ``checkmateLoss.wav`` (mate + resign lead-in). */
+  /** Louder than other dramatic stings — ``checkmate_loss.wav`` (mate + resign lead-in). */
   const MIX_SFX_MATE_LOSS = 0.62;
   const SFX_FADE_IN_MS = 48;
   const SFX_FADE_OUT_MS = 72;
@@ -99,7 +99,7 @@
   const MOVE_SOUND_FILENAMES = {
     best: 'best.wav',
     blunder: 'blunder.wav',
-    book: 'bookMove.wav',
+    book: 'book.wav',
     checkmate: 'checkmate_win.wav',
     excellent: 'excellent.wav',
     good: 'good.wav',
@@ -108,7 +108,7 @@
     mistake: 'mistake.wav',
   };
 
-  /** When difficulty is ``hard``, these classifications load from ``Sounds/Hard/``. */
+  /** When difficulty is ``hard``, these classifications load from ``static/audio/hard/``. */
   const HARD_PACK_CLASSIFICATIONS = {
     best: true,
     blunder: true,
@@ -121,11 +121,6 @@
     mistake: true,
   };
 
-  /** Hard pack uses different filenames than ``Medium`` for some labels. */
-  const HARD_MOVE_FILENAME_OVERRIDES = {
-    book: 'book.wav',
-  };
-
   function soundsPackFolder() {
     var d = (botDifficulty || 'medium').toLowerCase();
     if (d === 'hard') return 'Hard';
@@ -135,7 +130,7 @@
 
   /** Append cache-buster so updated pack WAVs are fetched (see ``PACK_SOUNDS_CACHE_VER``). */
   function packSoundUrl(path) {
-    if (!path || path.indexOf('/Sounds/') !== 0) return path;
+    if (!path || path.indexOf('/static/audio/') !== 0) return path;
     var sep = path.indexOf('?') >= 0 ? '&' : '?';
     return path + sep + 'v=' + PACK_SOUNDS_CACHE_VER;
   }
@@ -161,25 +156,22 @@
 
   /** Test-loop volume: Easy/Hard preview URLs vs default bed. */
   function ambienceBedPeakForTestUrl(url) {
-    if (isEasyMode() && url && url.indexOf('/Easy/') !== -1) {
+    if (isEasyMode() && url && url.indexOf('/easy/') !== -1) {
       return targetAmbienceVolume();
     }
-    if (url && url.indexOf('/Hard/') !== -1) {
+    if (url && url.indexOf('/hard/') !== -1) {
       return MIX_AMBIENCE * MIX_HARD_AMBIENCE_MUL;
     }
     return MIX_AMBIENCE;
   }
 
   function moveSoundUrlInPack(classification, packFolder) {
-    var fname =
-      packFolder === 'Hard' && HARD_MOVE_FILENAME_OVERRIDES[classification]
-        ? HARD_MOVE_FILENAME_OVERRIDES[classification]
-        : MOVE_SOUND_FILENAMES[classification];
+    var fname = MOVE_SOUND_FILENAMES[classification];
     if (!fname) return null;
     if (packFolder === 'Hard' && !HARD_PACK_CLASSIFICATIONS[classification]) {
       return null;
     }
-    return packSoundUrl('/Sounds/' + packFolder + '/' + fname);
+    return packSoundUrl('/static/audio/' + packFolder.toLowerCase() + '/' + fname);
   }
 
   function moveSoundUrl(classification) {
@@ -188,17 +180,13 @@
   }
 
   function ambienceUrl() {
-    return packSoundUrl('/Sounds/' + soundsPackFolder() + '/ambience.wav');
+    return packSoundUrl('/static/audio/' + soundsPackFolder().toLowerCase() + '/ambience.wav');
   }
 
   function mateLossUrlForPack(packFolder) {
-    if (packFolder === 'Hard') {
-      return packSoundUrl('/Sounds/Hard/checkmate_loss.wav');
-    }
-    return packSoundUrl('/Sounds/' + packFolder + '/checkmateLoss.wav');
+    return packSoundUrl('/static/audio/' + packFolder.toLowerCase() + '/checkmate_loss.wav');
   }
 
-  /** Medium: ``checkmateLoss.wav``. Hard: ``checkmate_loss.wav``. */
   function mateLossSoundUrl() {
     if (isEasyMode()) return null;
     return mateLossUrlForPack(soundsPackFolder());
@@ -386,7 +374,7 @@
       if (!kind) return;
       withRunningAudio(function () {});
       if (kind === 'ambience-start') {
-        startTestAmbienceFromUrl(packSoundUrl('/Sounds/Hard/ambience.wav'));
+        startTestAmbienceFromUrl(packSoundUrl('/static/audio/hard/ambience.wav'));
         return;
       }
       if (kind === 'ambience-stop') {
@@ -406,7 +394,7 @@
           pkMw,
           function () {
             playSfxUrl(
-              '/static/sounds/checkmate.wav',
+              '/static/audio/shared/checkmate.wav',
               pkMw,
               function () {
                 triggerSynthFallback(profMw, true);
@@ -662,7 +650,7 @@
       return;
     }
     var lossPeak = MIX_SFX_MATE_LOSS;
-    if (url && url.indexOf('/Hard/') !== -1) {
+    if (url && url.indexOf('/hard/') !== -1) {
       lossPeak = Math.min(
         0.98,
         lossPeak * MIX_HARD_PACK_MUL * MIX_HARD_MATE_LOSS_EXTRA_MUL
@@ -684,7 +672,7 @@
     if (isHardMode()) {
       dr = Math.min(0.98, dr * MIX_HARD_PACK_MUL);
     }
-    playSfxUrl('/static/sounds/resign.mp3', dr, null);
+    playSfxUrl('/static/audio/shared/resign.mp3', dr, null);
   }
 
   /** Easy mode: short descending sine pair (no MP3). */
@@ -752,7 +740,7 @@
       function () {
         if (classification === 'checkmate') {
           playSfxUrl(
-            '/static/sounds/checkmate.wav',
+            '/static/audio/shared/checkmate.wav',
             MIX_SFX_CHECKMATE_WIN,
             function () {
               triggerSynthFallback(profile, true);
@@ -1170,7 +1158,7 @@
         return;
       }
       var resignLossPeak = MIX_SFX_MATE_LOSS;
-      if (lossUrl.indexOf('/Hard/') !== -1) {
+      if (lossUrl.indexOf('/hard/') !== -1) {
         resignLossPeak = Math.min(
           0.98,
           resignLossPeak * MIX_HARD_PACK_MUL * MIX_HARD_MATE_LOSS_EXTRA_MUL

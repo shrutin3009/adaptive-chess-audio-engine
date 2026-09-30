@@ -11,7 +11,7 @@ STOCKFISH_PATH = os.environ.get(
     "STOCKFISH_PATH",
     "stockfish",
 )
-OPENING_BOOK_PATH = os.environ.get("OPENING_BOOK_PATH", str(PROJECT_ROOT / "gm2001.bin"))
+OPENING_BOOK_PATH = os.environ.get("OPENING_BOOK_PATH", str(PROJECT_ROOT / "data" / "gm2001.bin"))
 
 # Search depth for move analysis (higher is slower and more accurate).
 ENGINE_DEPTH = int(os.environ.get("ENGINE_DEPTH", "12"))

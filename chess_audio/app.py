@@ -7,7 +7,7 @@ from typing import Any, Optional
 
 import chess
 import chess.engine
-from flask import Flask, abort, jsonify, render_template, request, send_from_directory
+from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 
 from chess_audio import config, engine
@@ -23,17 +23,6 @@ app = Flask(
     template_folder=str(config.PROJECT_ROOT / "templates"),
 )
 CORS(app)
-
-_SOUNDS_ROOT = config.PROJECT_ROOT / "Sounds"
-
-
-@app.route("/Sounds/<path:filename>")
-@app.route("/sounds/<path:filename>")
-def serve_project_sounds(filename: str):
-    """Serve files from repo-root ``Sounds/`` (e.g. ``Sounds/Medium/ambience.wav``). Both ``/Sounds/`` and legacy ``/sounds/`` URLs work."""
-    if not _SOUNDS_ROOT.is_dir():
-        abort(404)
-    return send_from_directory(_SOUNDS_ROOT, filename)
 
 
 def root_eval_delta(eval_before: int, eval_after: int, mover: str) -> int:
