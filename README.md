@@ -116,7 +116,7 @@ Click a link to open the file in the browser; GitHub will show or download the a
 | Role | File |
 |------|------|
 | Checkmate (extra layer in Medium/Hard win sequence) | [static/audio/shared/checkmate.wav](./static/audio/shared/checkmate.wav) |
-| Resign sting (not Easy) | [static/audio/shared/resign.mp3](./static/audio/shared/resign.mp3) |
+| Resign sting (not Easy) | [static/audio/shared/resign.wav](./static/audio/shared/resign.wav) |
 
 ### With the dev server (matches in-game URLs)
 

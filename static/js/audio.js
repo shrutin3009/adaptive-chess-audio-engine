@@ -83,7 +83,7 @@ const SYNTH_TONES = {
 };
 
 const SHARED_CHECKMATE_URL = `${AUDIO_ROOT}/shared/checkmate.wav`;
-const SHARED_RESIGN_URL = `${AUDIO_ROOT}/shared/resign.mp3`;
+const SHARED_RESIGN_URL = `${AUDIO_ROOT}/shared/resign.wav`;
 
 /** 'easy' | 'medium' | 'hard' */
 let currentPack = 'medium';
