@@ -118,7 +118,7 @@ function moveSoundUrl(label) {
 }
 
 function ambienceUrl() {
-  return withCacheBuster(`${AUDIO_ROOT}/${currentPack}/ambience.wav`);
+  return withCacheBuster(`${AUDIO_ROOT}/${currentPack}/ambience.mp3`);
 }
 
 function mateLossUrl() {

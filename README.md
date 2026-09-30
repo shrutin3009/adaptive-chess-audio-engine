@@ -77,13 +77,13 @@ Click a link to open the file in the browser; GitHub will show or download the a
 
 | Role | File |
 |------|------|
-| Ambience bed | [static/audio/easy/ambience.wav](./static/audio/easy/ambience.wav) |
+| Ambience bed | [static/audio/easy/ambience.mp3](./static/audio/easy/ambience.mp3) |
 
 **Medium**
 
 | Role | File |
 |------|------|
-| Ambience bed | [static/audio/medium/ambience.wav](./static/audio/medium/ambience.wav) |
+| Ambience bed | [static/audio/medium/ambience.mp3](./static/audio/medium/ambience.mp3) |
 | Mate / resign lead-in | [static/audio/medium/checkmate_loss.wav](./static/audio/medium/checkmate_loss.wav) |
 | **best** | [static/audio/medium/best.wav](./static/audio/medium/best.wav) |
 | **great** | [static/audio/medium/great.wav](./static/audio/medium/great.wav) |
@@ -99,7 +99,7 @@ Click a link to open the file in the browser; GitHub will show or download the a
 
 | Role | File |
 |------|------|
-| Ambience bed | [static/audio/hard/ambience.wav](./static/audio/hard/ambience.wav) |
+| Ambience bed | [static/audio/hard/ambience.mp3](./static/audio/hard/ambience.mp3) |
 | Mate / resign lead-in | [static/audio/hard/checkmate_loss.wav](./static/audio/hard/checkmate_loss.wav) |
 | **best** | [static/audio/hard/best.wav](./static/audio/hard/best.wav) |
 | **great** | [static/audio/hard/great.wav](./static/audio/hard/great.wav) |
@@ -127,7 +127,7 @@ Base URL: `http://127.0.0.1:5001`
 
 Examples:
 
-- `http://127.0.0.1:5001/static/audio/medium/ambience.wav`
+- `http://127.0.0.1:5001/static/audio/medium/ambience.mp3`
 - `http://127.0.0.1:5001/static/audio/hard/checkmate_loss.wav`
 - `http://127.0.0.1:5001/static/audio/shared/checkmate.wav`
 
