@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Restart the ChessMusic Flask app (default port 5001).
-# Usage: ./restart_server.sh
-#   or:  PORT=8080 ./restart_server.sh
+# Restart the Adaptive Chess Audio Engine dev server (default port 5001).
+# Usage: scripts/restart_server.sh
+#   or:  PORT=8080 scripts/restart_server.sh
 #
 # If the server is running in another terminal, leave it running and run this
 # from a second terminal — or press Ctrl+C there first, then run this script.
 
 set -e
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 export PORT="${PORT:-5001}"
 
 if [[ -f .venv/bin/activate ]]; then
@@ -34,4 +34,4 @@ done
 sleep 1
 
 echo "Starting server on http://127.0.0.1:$PORT ..."
-exec python server.py
+exec python -m chess_audio

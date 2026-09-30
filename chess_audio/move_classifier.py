@@ -22,9 +22,9 @@ mistake, blunder. BRILLIANT → "great"; FORCED → "best".
 
 from __future__ import annotations
 
-import chess
-import chess.engine
 from typing import Optional
+
+import chess
 
 PIECE_VALUES = {"p": 100, "n": 300, "b": 300, "r": 500, "q": 900, "k": 0}
 
@@ -84,29 +84,7 @@ def cp_loss_from_evals(eval_before_white: int, eval_after_white: int, mover: str
     return max(0.0, loss)
 
 
-def white_cp_from_score(pov) -> int | None:
-    """python-chess Score from side-to-move root; normalize to approx centipawns White POV."""
-    if pov.is_mate():
-        m = pov.mate()
-        return 10000 if m and m > 0 else -10000
-    s = pov.score()
-    return int(s) if s is not None else 0
-
-
-def next_best_eval_white_from_multipv(
-    board: chess.Board, engine: chess.engine.SimpleEngine, depth: int
-) -> Optional[int]:
-    """Second MultiPV line score in White-POV cp, matching useClientAnalysis multiPV[1].score."""
-    infos = engine.analyse(
-        board, chess.engine.Limit(depth=depth), multipv=2
-    )
-    if not isinstance(infos, list) or len(infos) < 2:
-        return None
-    w = infos[1]["score"].white()
-    return white_cp_from_score(w)
-
-
-def classify_move_eye_on_chess(
+def classify_move(
     fen_before: str,
     played_uci: str,
     eval_before_white: int,
@@ -125,11 +103,11 @@ def classify_move_eye_on_chess(
     if mover not in ("w", "b"):
         mover = "w"
 
-    dbg: dict = {"source": "eye-on-chess", "forced": False, "brilliant": False}
+    debug: dict = {"source": "eye-on-chess", "forced": False, "brilliant": False}
 
     if len(list(board.legal_moves)) == 1:
-        dbg["forced"] = True
-        return "best", 0.0, dbg
+        debug["forced"] = True
+        return "best", 0.0, debug
 
     cp_loss = cp_loss_from_evals(eval_before_white, eval_after_white, mover)
 
@@ -144,25 +122,25 @@ def classify_move_eye_on_chess(
         else:
             next_best_loss = float(eval_before_white - next_best_eval_white)
         if next_best_loss > 150:
-            dbg["brilliant"] = True
-            return "great", cp_loss, dbg
+            debug["brilliant"] = True
+            return "great", cp_loss, debug
 
     best_n = best_move_uci.strip().lower()
     played_n = played_uci.strip().lower()
     if best_n and played_n == best_n:
-        return "best", cp_loss, dbg
+        return "best", cp_loss, debug
 
     # Threshold ladder (classify.ts lines 109–116), names mapped for this app
     if cp_loss <= 5:
-        return "great", cp_loss, dbg
+        return "great", cp_loss, debug
     if cp_loss <= 10:
-        return "excellent", cp_loss, dbg
+        return "excellent", cp_loss, debug
     if cp_loss <= 25:
-        return "excellent", cp_loss, dbg
+        return "excellent", cp_loss, debug
     if cp_loss <= 50:
-        return "good", cp_loss, dbg
+        return "good", cp_loss, debug
     if cp_loss <= 100:
-        return "inaccuracy", cp_loss, dbg
+        return "inaccuracy", cp_loss, debug
     if cp_loss <= 200:
-        return "mistake", cp_loss, dbg
-    return "blunder", cp_loss, dbg
+        return "mistake", cp_loss, debug
+    return "blunder", cp_loss, debug

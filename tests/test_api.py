@@ -2,8 +2,9 @@ import chess
 import chess.engine
 import pytest
 
-import server
-from bot_levels import ENGINE_FULL_STRENGTH_UCI
+from chess_audio import config
+from chess_audio import engine as engine_module
+from chess_audio.bot_levels import FULL_STRENGTH_OPTIONS
 
 START = chess.STARTING_FEN
 AFTER_E4 = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
@@ -86,7 +87,7 @@ def test_evaluate_returns_white_pov_eval(client, fake_engine):
 
 
 def test_evaluate_reports_missing_engine_as_json_500(client, monkeypatch):
-    monkeypatch.setattr(server, "get_engine", raise_missing_binary)
+    monkeypatch.setattr(engine_module, "get_engine", raise_missing_binary)
     response = client.post("/api/evaluate", json={"fen": START})
     assert response.status_code == 500
     assert "Stockfish not found" in response.get_json()["error"]
@@ -103,7 +104,7 @@ def test_bot_move_returns_legal_move_and_resets_strength(client, fake_engine):
     assert data["difficulty"] == "hard"
     assert data["bot_level"] == "Hard"
     assert chess.Move.from_uci(data["uci"]) in chess.Board(AFTER_E4).legal_moves
-    assert fake_engine.configured[-1] == ENGINE_FULL_STRENGTH_UCI
+    assert fake_engine.configured[-1] == FULL_STRENGTH_OPTIONS
 
 
 def test_bot_move_unknown_difficulty_falls_back_to_medium(client, fake_engine):
@@ -143,7 +144,7 @@ def test_analyze_move_response_fields(client, fake_engine):
     assert data["classification"] == "book"
     assert data["is_book_move"] is True
     assert data["phase_before_move"] == "opening"
-    assert len(data["top_moves_uci"]) == server.MULTIPV_LINES
+    assert len(data["top_moves_uci"]) == config.MULTIPV_LINES
 
 
 def test_analyze_move_infers_played_uci(client, fake_engine):

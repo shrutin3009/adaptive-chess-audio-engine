@@ -4,7 +4,8 @@ import chess
 import chess.engine
 import pytest
 
-import server
+from chess_audio import engine as engine_module
+from chess_audio.app import app
 
 
 class FakeEngine:
@@ -62,18 +63,18 @@ def close_real_engine():
     # python-chess keeps Stockfish on a non-daemon thread, so the interpreter
     # would wait on it forever at exit unless the engine is quit explicitly.
     yield
-    server.close_engine()
+    engine_module.close_engine()
 
 
 @pytest.fixture
 def fake_engine(monkeypatch) -> FakeEngine:
     engine = FakeEngine()
-    monkeypatch.setattr(server, "get_engine", lambda: engine)
+    monkeypatch.setattr(engine_module, "get_engine", lambda: engine)
     return engine
 
 
 @pytest.fixture
 def client():
-    server.app.config["TESTING"] = True
-    with server.app.test_client() as c:
+    app.config["TESTING"] = True
+    with app.test_client() as c:
         yield c

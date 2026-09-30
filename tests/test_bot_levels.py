@@ -1,7 +1,7 @@
 import chess.engine
 import pytest
 
-from bot_levels import ENGINE_FULL_STRENGTH_UCI, apply_bot_level, normalize_difficulty, reset_engine_strength
+from chess_audio.bot_levels import FULL_STRENGTH_OPTIONS, apply_bot_level, normalize_difficulty, reset_engine_strength
 
 
 @pytest.mark.parametrize(
@@ -38,4 +38,4 @@ def test_elo_is_clamped_to_engine_reported_range(fake_engine):
 
 def test_reset_restores_full_strength(fake_engine):
     reset_engine_strength(fake_engine)
-    assert fake_engine.configured == [ENGINE_FULL_STRENGTH_UCI]
+    assert fake_engine.configured == [FULL_STRENGTH_OPTIONS]

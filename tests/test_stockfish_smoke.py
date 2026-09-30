@@ -5,8 +5,6 @@ import os
 import chess
 import pytest
 
-import server
-
 pytestmark = pytest.mark.skipif(
     not os.path.isfile(os.environ.get("STOCKFISH_PATH", "")),
     reason="set STOCKFISH_PATH to a Stockfish binary to run",
