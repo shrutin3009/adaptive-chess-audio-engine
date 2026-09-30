@@ -29,7 +29,8 @@ brew install stockfish            # macOS
 # or download from https://stockfishchess.org/download/
 
 # 2. Install and run
-git clone <this repo> && cd ChessMusic
+git clone https://github.com/shrutin3009/adaptive-chess-audio-engine.git
+cd adaptive-chess-audio-engine
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python -m chess_audio
