@@ -132,6 +132,13 @@ function ambienceVolume() {
   return MIX_AMBIENCE;
 }
 
+function mateLossVolume() {
+  if (currentPack === 'hard') {
+    return Math.min(0.98, MIX_SFX_MATE_LOSS * MIX_HARD_PACK_MUL * MIX_HARD_MATE_LOSS_EXTRA_MUL);
+  }
+  return MIX_SFX_MATE_LOSS;
+}
+
 function moveSoundVolume(label) {
   if (currentPack === 'hard') {
     const volume = HARD_MOVE_VOLUMES[label] ?? MOVE_VOLUMES[label] ?? MIX_SFX_MOVE;
@@ -193,12 +200,12 @@ function playSynthTone(tone, replacesFailedFile = false) {
   const context = getAudioContext();
   if (!context) return;
   const gainScale = !replacesFailedFile && currentPack === 'easy' ? MIX_EASY_SYNTH_MUL : 1;
-  const play = () => playTone(context, tone.hz, tone.seconds, gainScale);
-  if (context.state === 'running') {
-    play();
-    return;
-  }
-  context.resume().then(play).catch(() => {});
+  playWhenRunning(context, () => playTone(context, tone.hz, tone.seconds, gainScale));
+}
+
+function playWhenRunning(context, play) {
+  if (context.state === 'running') play();
+  else context.resume().then(play).catch(() => {});
 }
 
 function cancelAmbienceFade() {
@@ -221,21 +228,27 @@ function stopAmbience() {
   ambienceAudio = null;
 }
 
-function rampAmbienceVolume(element, fromVolume, toVolume, durationMs) {
-  cancelAmbienceFade();
+/**
+ * Move element.volume linearly between two levels. Uses setInterval rather than
+ * requestAnimationFrame because rAF timestamp quirks can produce NaN volumes.
+ * Returns the interval id; the ramp also stops itself once shouldStop() is true.
+ */
+function rampVolume(element, fromVolume, toVolume, durationMs, { stepMs = 16, shouldStop, onDone } = {}) {
   const startedAt = performance.now();
-  ambienceFadeTimer = setInterval(() => {
-    const progress = Math.min(1, (performance.now() - startedAt) / durationMs);
-    if (ambienceAudio !== element) {
-      cancelAmbienceFade();
+  const timer = setInterval(() => {
+    if (shouldStop && shouldStop()) {
+      clearInterval(timer);
       return;
     }
-    element.volume = fromVolume + (toVolume - fromVolume) * progress;
+    const progress = Math.min(1, (performance.now() - startedAt) / durationMs);
+    element.volume = Math.max(0, fromVolume + (toVolume - fromVolume) * progress);
     if (progress >= 1) {
-      cancelAmbienceFade();
+      clearInterval(timer);
       element.volume = toVolume;
+      if (onDone) onDone();
     }
-  }, 16);
+  }, stepMs);
+  return timer;
 }
 
 export function startAmbience() {
@@ -246,14 +259,16 @@ export function startAmbience() {
   ambienceAudio = element;
   element
     .play()
-    .then(() => rampAmbienceVolume(element, 0, ambienceVolume(), AMBIENCE_FADE_IN_MS))
+    .then(() => {
+      cancelAmbienceFade();
+      ambienceFadeTimer = rampVolume(element, 0, ambienceVolume(), AMBIENCE_FADE_IN_MS, {
+        shouldStop: () => ambienceAudio !== element,
+      });
+    })
     .catch((error) => console.warn('Ambience could not play:', error));
 }
 
-/**
- * Fade the ambience to silence, call onDone, then stop it. Uses setInterval rather than
- * requestAnimationFrame because rAF timestamp quirks can produce NaN volumes.
- */
+/** Fade the ambience to silence, call onDone, then stop it. */
 export function fadeOutAmbience(onDone, durationMs = AMBIENCE_FADE_BEFORE_DRAMATIC_MS) {
   cancelAmbienceFade();
   const element = ambienceAudio;
@@ -268,20 +283,14 @@ export function fadeOutAmbience(onDone, durationMs = AMBIENCE_FADE_BEFORE_DRAMAT
   if (element.paused) {
     element.play().catch(() => {});
   }
-  const startedAt = performance.now();
-  ambienceFadeTimer = setInterval(() => {
-    const progress = Math.min(1, (performance.now() - startedAt) / durationMs);
-    if (ambienceAudio !== element) {
-      cancelAmbienceFade();
-      return;
-    }
-    element.volume = Math.max(0, startVolume * (1 - progress));
-    if (progress >= 1) {
-      cancelAmbienceFade();
+  ambienceFadeTimer = rampVolume(element, startVolume, 0, durationMs, {
+    stepMs: 40,
+    shouldStop: () => ambienceAudio !== element,
+    onDone: () => {
       onDone();
       stopAmbience();
-    }
-  }, 40);
+    },
+  });
 }
 
 export function preloadDramaticStings() {
@@ -327,16 +336,7 @@ function playSfx(url, peak, { onFail, onEnded, fadeInMs = SFX_FADE_IN_MS } = {})
     if (!duration || !isFinite(duration) || duration <= 0) return;
     if (duration - element.currentTime > SFX_FADE_OUT_MS / 1000 + 0.03) return;
     tailFadeStarted = true;
-    const fromVolume = Math.max(0, Math.min(peak, element.volume));
-    const startedAt = performance.now();
-    const timer = setInterval(() => {
-      const progress = Math.min(1, (performance.now() - startedAt) / SFX_FADE_OUT_MS);
-      element.volume = fromVolume * (1 - progress);
-      if (progress >= 1) {
-        clearInterval(timer);
-        element.volume = 0;
-      }
-    }, 16);
+    rampVolume(element, Math.max(0, Math.min(peak, element.volume)), 0, SFX_FADE_OUT_MS);
   });
 
   element.addEventListener('ended', () => {
@@ -353,16 +353,11 @@ function playSfx(url, peak, { onFail, onEnded, fadeInMs = SFX_FADE_IN_MS } = {})
       element.volume = peak;
       return;
     }
-    const startedAt = performance.now();
-    fadeInTimer = setInterval(() => {
-      const progress = Math.min(1, (performance.now() - startedAt) / fadeInMs);
-      element.volume = peak * progress;
-      if (progress >= 1) {
-        clearInterval(fadeInTimer);
+    fadeInTimer = rampVolume(element, 0, peak, fadeInMs, {
+      onDone: () => {
         fadeInTimer = null;
-        element.volume = peak;
-      }
-    }, 16);
+      },
+    });
   };
 
   element.play().then(fadeIn).catch(fail);
@@ -392,11 +387,7 @@ export function playMateLossSound() {
     withAudioUnlocked(() => playSynthTone(SYNTH_TONES.checkmate));
     return;
   }
-  let volume = MIX_SFX_MATE_LOSS;
-  if (currentPack === 'hard') {
-    volume = Math.min(0.98, volume * MIX_HARD_PACK_MUL * MIX_HARD_MATE_LOSS_EXTRA_MUL);
-  }
-  playSfx(url, volume, { onFail: () => playSynthTone(SYNTH_TONES.checkmate, true), fadeInMs: 0 });
+  playSfx(url, mateLossVolume(), { onFail: () => playSynthTone(SYNTH_TONES.checkmate, true), fadeInMs: 0 });
 }
 
 function playResignSting() {
@@ -411,12 +402,10 @@ function playResignSting() {
 function playEasyResignSynth() {
   const context = getAudioContext();
   if (!context) return;
-  const play = () => {
+  playWhenRunning(context, () => {
     playTone(context, 233, 0.14, MIX_EASY_SYNTH_MUL);
     setTimeout(() => playTone(context, 175, 0.22, MIX_EASY_SYNTH_MUL), 100);
-  };
-  if (context.state === 'running') play();
-  else context.resume().then(play).catch(() => {});
+  });
 }
 
 function playResignCue() {
@@ -440,9 +429,5 @@ export function playResignSequence() {
     playResignCueOnce();
     return;
   }
-  let volume = MIX_SFX_MATE_LOSS;
-  if (currentPack === 'hard') {
-    volume = Math.min(0.98, volume * MIX_HARD_PACK_MUL * MIX_HARD_MATE_LOSS_EXTRA_MUL);
-  }
-  playSfx(leadInUrl, volume, { onFail: playResignCueOnce, onEnded: playResignCueOnce, fadeInMs: 0 });
+  playSfx(leadInUrl, mateLossVolume(), { onFail: playResignCueOnce, onEnded: playResignCueOnce, fadeInMs: 0 });
 }
