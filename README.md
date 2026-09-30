@@ -16,7 +16,7 @@ Chess sites show these judgements as icons after the game is over. Hearing them 
 - **Easy** plays soft Web Audio sine tones for each label.
 - **Medium** and **Hard** play composed WAV stings, with a separate mix for each pack.
 
-All of the music and sound effects are original, made in SuperCollider and GarageBand.
+I composed and produced all of the music and sound effects myself, in SuperCollider and GarageBand.
 
 ## Quick start
 
@@ -189,7 +189,7 @@ These are real bugs, left in place on purpose because this pass was cleanup only
 
 ## Credits
 
-- All audio in `static/audio/` is original work, created in SuperCollider and GarageBand.
+- All audio in `static/audio/` was composed and produced by me, Shruti Narayanan, in SuperCollider and GarageBand.
 - Move classification is ported from [Eye on Chess](https://github.com/amiwrpremium/eye-on-chess) by amiwrpremium.
 - The game-phase thresholds follow the rules described by the ailed-chess project.
 - [Stockfish](https://stockfishchess.org/) (GPLv3) does the analysis and plays the bot. It is not bundled; you install it separately.
